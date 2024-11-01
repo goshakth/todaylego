@@ -3,13 +3,12 @@ import "firebase/auth";
 import "firebase/firestore";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyCV1l2UJx_iGwX0tC_kSX_5zoGGuH4hXsk",
-    authDomain: "sasclubmn.firebaseapp.com",
-    projectId: "sasclubmn",
-    storageBucket: "sasclubmn.appspot.com",
-    messagingSenderId: "805961519768",
-    appId: "1:805961519768:web:db1d1e18285a1dadfeb6ed",
-    measurementId: "G-BVQDK5JN7H"
+  apiKey: "AIzaSyCXTSQjv3PNU5W5DS6IHic2giQQq2u_O94",
+  authDomain: "lego-73686.firebaseapp.com",
+  projectId: "lego-73686",
+  storageBucket: "lego-73686.appspot.com",
+  messagingSenderId: "758321857556",
+  appId: "1:758321857556:web:a796ea64d3f874685e9301"
 };
 
 firebase.initializeApp(firebaseConfig);

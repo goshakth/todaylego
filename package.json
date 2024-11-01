@@ -3,18 +3,29 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@nivo/core": "^0.83.1",
+    "@nivo/waffle": "^0.83.1",
     "@react-firebase/auth": "^0.2.10",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
+    "apexcharts": "^3.54.1",
     "bootstrap": "^5.3.1",
-    "firebase": "^8.6.8",
+    "chart.js": "^4.4.6",
+    "chartjs-plugin-datalabels": "^2.2.0",
+    "firebase": "^8.10.1",
+    "packages": "^0.0.8",
     "react": "^18.2.0",
+    "react-apexcharts": "^1.5.0",
+    "react-beautiful-dnd": "^13.1.1",
+    "react-chartjs-2": "^5.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^4.10.1",
     "react-modal": "^3.16.1",
     "react-router-dom": "^6.14.2",
     "react-scripts": "^2.1.3",
+    "react-toggle": "^4.1.3",
+    "styled-components": "^6.1.1",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
@@ -47,5 +58,18 @@
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@babel/preset-env": "^7.22.9",
     "@babel/preset-react": "^7.22.5"
-  }
+  },
+  "description": "This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gyulimjessKang/clubsmate.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gyulimjessKang/clubsmate/issues"
+  },
+  "homepage": "https://github.com/gyulimjessKang/clubsmate#readme"
 }

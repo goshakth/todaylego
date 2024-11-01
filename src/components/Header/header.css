@@ -1,0 +1,98 @@
+.logo {
+    width: 170px;
+    height: auto;
+
+}
+
+.announcementLogo {
+    width: 40px;
+}
+
+.navAlign {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    height: 50px;
+    padding-top: 10px;
+    padding-left: 25px;
+    padding-right: 25px;
+    padding-bottom: 10px;
+    background-color: #1d1c1d;
+    border-bottom: 1px solid #c0c0c0;
+}
+
+.club-logo {
+    width: 30vw;
+}
+
+.menu-tab {
+    width: 67.5vw;
+    margin-left: 40px;
+    display: flex;
+    align-items: center;
+}
+
+.menu-items {
+    display: flex;
+    align-items: center;
+}
+
+.nav-item {
+    margin-right: 50px;
+    text-decoration: none;
+    /* 밑줄 제거 */
+    color: #1D1D1D;
+    /* 현재의 텍스트 색상을 유지 */
+}
+
+.nav-item:last-child {
+    margin-right: 0;
+}
+
+.user-controls {
+    margin-left: 70px; /* 로고와의 간격 조정 */
+    width: 20vw;
+    display: flex;
+    align-items: center;
+    /* 아이템들을 수직 중앙에 정렬합니다. 필요에 따라 삭제하셔도 됩니다. */
+    gap: 10px;
+}
+
+.nav-link-box {
+    width: 94px;
+    height: 38px;
+    background-color: #1A2D58;
+    border-radius: 4px;
+    color: white;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    color: var(--white, #FFF);
+
+    /* Body */
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 22px;
+}
+
+.nav-search {
+    margin-left: auto; /* 검색 박스를 오른쪽으로 정렬 */
+    padding-left: 20px;
+  }
+  
+  .nav-search input {
+    padding: 5px 10px;
+    font-size: 16px;
+    border: 1px solid #565557;
+    color: #FFF;
+    background-color: #565557;
+    border-radius: 50px;
+  }
+  .nav-search input::placeholder {
+    color: white; /* placeholder 글자를 흰색으로 */
+    opacity: 1;   /* 일부 브라우저에서 placeholder의 기본 불투명도를 제거 */
+  }

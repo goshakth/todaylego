@@ -64,20 +64,20 @@ const AdminPage = () => {
 
   const hashTagOptions = [
     "Creativity",
-    "math",
-    "competition",
+    "Math",
+    "Competition",
     "Business Skills",
     "Environmental Issues",
     "Teaching",
-    "gender equality",
-    "health and wellness",
-    "culture",
+    "Gender Equality",
+    "Health and Wellness",
+    "Culture",
     "Research",
-    "music",
-    "writing",
-    "debate",
+    "Music",
+    "Writing",
+    "Debate",
     "DEI",
-    "games",
+    "Games",
     "Science",
     "Hands-On Experiments",
     "Technology",
@@ -95,7 +95,7 @@ const AdminPage = () => {
         if (currentHashTags.length < 3) {
           currentHashTags.push(value);
         } else {
-          alert("최대 3개까지만 선택 가능합니다.");
+          alert("You can choose maximum 3 hashtags");
           event.target.checked = false;
           return;
         }
@@ -104,7 +104,7 @@ const AdminPage = () => {
       }
       setNewClubInfo((prev) => ({
         ...prev,
-        hash_tag: currentHashTags.join(","),
+        hash_tag: currentHashTags.join(", "),
       }));
     } else {
       setNewClubInfo((prev) => ({ ...prev, [name]: value }));
@@ -415,6 +415,7 @@ const AdminPage = () => {
         .doc(selectedClub)
         .update(clubInfo)
         .then(() => {
+          alert("Done.");
           console.log("Document successfully updated!");
         })
         .catch((error) => {
@@ -428,7 +429,7 @@ const AdminPage = () => {
       if (selectedHashTags.length < 3) {
         setSelectedHashTags((prev) => [...prev, event.target.value]);
       } else {
-        alert("최대 3개까지만 선택할 수 있습니다.");
+        alert("You can choose maximum 3 hashtags");
         event.target.checked = false;
       }
     } else {
@@ -436,9 +437,15 @@ const AdminPage = () => {
         prev.filter((tag) => tag !== event.target.value)
       );
     }
-    clubInfo.hash_tag = selectedHashTags.join(", "); // 혹은 필요한 형태로 저장
+  
+    if (clubInfo) {
+      const updatedHashTags = selectedHashTags.length < 3 ? [...selectedHashTags, event.target.value] : selectedHashTags;
+      const updatedClubInfo = { ...clubInfo, hash_tag: updatedHashTags.join(", ") };
+      setClubInfo(updatedClubInfo);
+      
+    }
   };
-
+    
   const handleEventSelectChange = (e) => {
     setSelectedEvent(e.target.value);
     const selectedEvent = events.find((event) => event.id === e.target.value);

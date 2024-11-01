@@ -37,7 +37,7 @@ const LoginPage = () => {
       const email_handle = email.substring(0, email.lastIndexOf("@"));
       const domain = email.substring(email.lastIndexOf("@") + 1);
 
-      if (domain !== 'sas.edu.sg') {
+      if (domain !== 'gmail.com') {
         await auth.signOut();
         console.log('Only members of the SAS community may access this page. Please log in with sas.edu.sg account!');
         setErrorMsg('Only members of the SAS community may access this page. Please log in with sas.edu.sg account');
@@ -67,7 +67,7 @@ const LoginPage = () => {
     <div className=" login-background">
     {/* <div><img src="/img/saslogo.png" /></div> */}
     <div className="Title">
-      Welcome to SAS General Club Portal - CLUBSMATE!
+      Welcome to Sha LEGO Portal!
     </div>
     <div className="googleLoginButton">
       <button onClick={signInWithGoogle} className="google-btn" type="button">
