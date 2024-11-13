@@ -37,11 +37,6 @@ function Navbar() {
               📁 My 프로젝트
             </Link>
           </li>
-          <li>
-            <Link to="/settings" className="nav-item">
-              ⚙️ Settings
-            </Link>
-          </li>
         </ul>
       </div>
     </div>
