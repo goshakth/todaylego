@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { db } from '../../firebase';
 import Chart from 'react-apexcharts';
+import './mydashboard.css';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import './mydashboard.css';
+import firebase from 'firebase/app';
 
 const ITEM_TYPE = 'TASK';
 
@@ -13,20 +15,18 @@ const Task = ({ task, moveTask, columnId }) => {
   });
 
   return (
-    <div ref={ref} className="kanban-task">
+    <div ref={ref} className={`kanban-task ${task.projectName.replace(' ', '-')}`}>
       <div className="task-header">
-        <div className="task-dot" style={{ backgroundColor: '#34c38f' }}></div>
-        <strong>{task.category}</strong>
-        <span className="team-info">{task.team}</span>
+        <strong>{task.projectName}</strong>
+        <span className="team-info">{task.category1}</span>
       </div>
-      <div className="task-content">{task.content}</div>
-      {task.note && <div className="task-note">{task.note}</div>}
-      <div className="task-footer">{task.spent}</div>
+      <div className="task-content">{task.category2}</div>
+      <div className="task-footer">{task.spentTime} / {task.baseTime} h</div>
     </div>
   );
 };
 
-const Column = ({ column, tasks, moveTask, addTask }) => {
+const Column = ({ column, tasks, moveTask }) => {
   const [, ref] = useDrop({
     accept: ITEM_TYPE,
     drop: (item) => moveTask(item.id, item.columnId, column.id),
@@ -40,70 +40,108 @@ const Column = ({ column, tasks, moveTask, addTask }) => {
       {tasks.map((task) => (
         <Task key={task.id} task={task} moveTask={moveTask} columnId={column.id} />
       ))}
-      <button onClick={() => addTask(column.id)} className="add-task">
-        + 작업 추가
-      </button>
     </div>
   );
 };
 
 const MyDashboard = () => {
   const totalMonthlyHours = 191;
-
-  const monthlyData = {
-    series: [108, 35, 24, 18, 6],
-    options: {
-      chart: { type: 'donut' },
-      labels: ['비대면', 'K-Health', 'CRO', '기타', '새싹 생성 3기'],
-      colors: ['#34c38f', '#3498db', '#9b59b6', '#e0e0e0', '#a9a9ff'],
-      plotOptions: {
-        pie: {
-          donut: {
-            labels: {
-              show: true,
-              total: {
-                show: true,
-                label: '총 투입 시간',
-                formatter: () => `${totalMonthlyHours} h`,
-              },
-            },
-          },
-        },
-      },
-      dataLabels: { enabled: false },
-      legend: { show: false },
-    },
-  };
-
-  const weeklyData = {
-    series: [
-      {
-        name: '투입 시간',
-        data: [43, 39, 39, 45, 25],
-      },
-    ],
-    options: {
-      chart: { type: 'bar', height: 350 },
-      xaxis: { categories: ['~ 10.05', '~ 10.12', '~ 10.19', '~ 10.26', '~ 10.31'] },
-      colors: ['#34c38f'],
-    },
-  };
-
   const [kanbanData, setKanbanData] = useState({
-    tasks: {
-      'task-1': { id: 'task-1', content: '검토 수정', category: '기타', team: '홍길동 / 경영관리팀', spent: '4 / - / 4' },
-      'task-2': { id: 'task-2', content: '초안작성', category: '비대면', team: '홍길동 / 경영관리팀', spent: '30 / 32 / 지연', note: '지연사유: 사업계획서 변경' },
-      'task-3': { id: 'task-3', content: '외부회의', category: '비대면', team: '홍길동 / 경영관리팀', spent: '3 / 2 / 1', note: '비대면 ○○○ 회의' },
-      'task-4': { id: 'task-4', content: '자문회의', category: 'K-Health', team: '홍길동 / 경영관리팀', spent: '3 / 2 / 완료' },
-    },
+    tasks: [],
     columns: {
-      'column-1': { id: 'column-1', title: '할 일', taskIds: ['task-1'] },
-      'column-2': { id: 'column-2', title: '지연 됨', taskIds: ['task-2'] },
-      'column-3': { id: 'column-3', title: '진행 중', taskIds: ['task-3'] },
-      'column-4': { id: 'column-4', title: '완료', taskIds: ['task-4'] },
+      'column-1': { id: 'column-1', title: '할 일', taskIds: [] },
+      'column-2': { id: 'column-2', title: '지연 됨', taskIds: [] },
+      'column-3': { id: 'column-3', title: '진행 중', taskIds: [] },
+      'column-4': { id: 'column-4', title: '완료', taskIds: [] },
     },
     columnOrder: ['column-1', 'column-2', 'column-3', 'column-4'],
   });
+
+  const [chartData, setChartData] = useState({
+    projectSeries: [],
+    projectLabels: [],
+    weeklySeries: [],
+    weeklyLabels: [],
+  });
+
+  const [currentUserId, setCurrentUserId] = useState(null);
+
+  useEffect(() => {
+    const user = firebase.auth().currentUser;
+    if (user) {
+      setCurrentUserId(user.uid);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!currentUserId) return;
+
+    const fetchData = async () => {
+      try {
+        const snapshot = await db.collection('tasks')
+          .where('Usersid', '==', currentUserId)
+          .get();
+
+        const fetchedTasks = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        // 칸반보드 데이터 초기화
+        const columns = {
+          'column-1': { ...kanbanData.columns['column-1'], taskIds: [] },
+          'column-2': { ...kanbanData.columns['column-2'], taskIds: [] },
+          'column-3': { ...kanbanData.columns['column-3'], taskIds: [] },
+          'column-4': { ...kanbanData.columns['column-4'], taskIds: [] },
+        };
+
+        fetchedTasks.forEach((task) => {
+          if (task.status === '할일') columns['column-1'].taskIds.push(task.id);
+          else if (task.status === '지연') columns['column-2'].taskIds.push(task.id);
+          else if (task.status === '진행중') columns['column-3'].taskIds.push(task.id);
+          else if (task.status === '완료') columns['column-4'].taskIds.push(task.id);
+        });
+
+        setKanbanData((prevData) => ({
+          ...prevData,
+          tasks: fetchedTasks,
+          columns,
+        }));
+
+        // 차트 데이터 계산
+        const projectTimeMap = {};
+        const weeklyTimeMap = {};
+
+        fetchedTasks.forEach((task) => {
+          if (!projectTimeMap[task.projectName]) {
+            projectTimeMap[task.projectName] = 0;
+          }
+          projectTimeMap[task.projectName] += task.spentTime || 0;
+
+          const parsedDate = new Date(task.date);
+          const weekLabel = !isNaN(parsedDate.getTime())
+            ? parsedDate.toISOString().split('T')[0]
+            : new Date().toISOString().split('T')[0];
+
+          if (!weeklyTimeMap[weekLabel]) {
+            weeklyTimeMap[weekLabel] = 0;
+          }
+          weeklyTimeMap[weekLabel] += task.spentTime || 0;
+        });
+
+        setChartData({
+          projectSeries: Object.values(projectTimeMap),
+          projectLabels: Object.keys(projectTimeMap),
+          weeklySeries: [{ name: '시간', data: Object.values(weeklyTimeMap) }],
+          weeklyLabels: Object.keys(weeklyTimeMap),
+        });
+      } catch (error) {
+        console.error('Error fetching tasks:', error);
+      }
+    };
+
+    fetchData();
+  }, [currentUserId]);
 
   const moveTask = (taskId, sourceColumnId, targetColumnId) => {
     if (sourceColumnId === targetColumnId) return;
@@ -114,37 +152,57 @@ const MyDashboard = () => {
     const newSourceTaskIds = sourceColumn.taskIds.filter((id) => id !== taskId);
     const newTargetTaskIds = [...targetColumn.taskIds, taskId];
 
-    setKanbanData((prevData) => ({
-      ...prevData,
-      columns: {
-        ...prevData.columns,
-        [sourceColumnId]: { ...sourceColumn, taskIds: newSourceTaskIds },
-        [targetColumnId]: { ...targetColumn, taskIds: newTargetTaskIds },
-      },
-    }));
-  };
-
-  const addTask = (columnId) => {
-    const newTaskId = `task-${Object.keys(kanbanData.tasks).length + 1}`;
-    const newTask = {
-      id: newTaskId,
-      content: '새 작업',
-      category: '기타',
-      team: '홍길동 / 경영관리팀',
-      spent: '0 / 0 / 0',
+    const updatedColumns = {
+      ...kanbanData.columns,
+      [sourceColumnId]: { ...sourceColumn, taskIds: newSourceTaskIds },
+      [targetColumnId]: { ...targetColumn, taskIds: newTargetTaskIds },
     };
 
     setKanbanData((prevData) => ({
       ...prevData,
-      tasks: { ...prevData.tasks, [newTaskId]: newTask },
-      columns: {
-        ...prevData.columns,
-        [columnId]: {
-          ...prevData.columns[columnId],
-          taskIds: [...prevData.columns[columnId].taskIds, newTaskId],
+      columns: updatedColumns,
+    }));
+
+    const updatedStatus =
+      targetColumnId === 'column-1'
+        ? '할일'
+        : targetColumnId === 'column-2'
+        ? '지연'
+        : targetColumnId === 'column-3'
+        ? '진행중'
+        : '완료';
+
+    db.collection('tasks')
+      .doc(taskId)
+      .update({ status: updatedStatus });
+  };
+
+  const monthlyChartOptions = {
+    chart: { type: 'donut' },
+    labels: chartData.projectLabels,
+    colors: ['#34c38f', '#3498db', '#9b59b6', '#e0e0e0', '#a9a9ff'],
+    plotOptions: {
+      pie: {
+        donut: {
+          labels: {
+            show: true,
+            total: {
+              show: true,
+              label: '총 투입 시간',
+              formatter: () => `${totalMonthlyHours} h`,
+            },
+          },
         },
       },
-    }));
+    },
+    dataLabels: { enabled: false },
+    legend: { show: false },
+  };
+
+  const weeklyChartOptions = {
+    chart: { type: 'bar', height: 350 },
+    xaxis: { categories: chartData.weeklyLabels },
+    colors: ['#34c38f'],
   };
 
   return (
@@ -152,28 +210,32 @@ const MyDashboard = () => {
       <div className="dashboard-section">
         <div className="chart-container pie-chart">
           <h3>월간 투입시간</h3>
-          <Chart options={monthlyData.options} series={monthlyData.series} type="donut" height={300} />
+          <Chart
+            options={monthlyChartOptions}
+            series={chartData.projectSeries}
+            type="donut"
+            height={300}
+          />
         </div>
         <div className="chart-container bar-chart">
           <h3>주간 투입시간</h3>
-          <Chart options={weeklyData.options} series={weeklyData.series} type="bar" height={300} />
+          <Chart
+            options={weeklyChartOptions}
+            series={chartData.weeklySeries}
+            type="bar"
+            height={300}
+          />
         </div>
       </div>
       <DndProvider backend={HTML5Backend}>
         <div className="kanban-board">
           {kanbanData.columnOrder.map((columnId) => {
             const column = kanbanData.columns[columnId];
-            const tasks = column.taskIds.map((taskId) => kanbanData.tasks[taskId]);
-
-            return (
-              <Column
-                key={column.id}
-                column={column}
-                tasks={tasks}
-                moveTask={moveTask}
-                addTask={addTask}
-              />
+            const tasks = column.taskIds.map((taskId) =>
+              kanbanData.tasks.find((task) => task.id === taskId)
             );
+
+            return <Column key={column.id} column={column} tasks={tasks} moveTask={moveTask} />;
           })}
         </div>
       </DndProvider>

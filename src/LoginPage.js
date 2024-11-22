@@ -51,11 +51,11 @@ const LoginPage = () => {
             isSuperUser: false,
           });
         }
-
+        
         const isAdminStatus = await handleIsAdmin(email_handle, userDocSnapshot);
         setIsAdmin(isAdminStatus);
 
-        let { from } = location.state || { from: { pathname: "/" } };
+        let { from } = location.state || { from: { pathname: "/dashboard" } }; // 로그인시 바로 데시보드로 241122 taek
         navigate(from);
       }
     } catch (error) {

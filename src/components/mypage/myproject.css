@@ -1,176 +1,209 @@
 .my-project {
-    padding: 20px;
-    background-color: #f9f9f9;
-    margin-left: 250px; /* 네브바 너비만큼 왼쪽 여백 설정 */
-    padding-top: 70px; /* 헤더 높이만큼 상단 여백 설정 */
-    overflow-y: auto;
-    height: calc(100vh - 70px); /* 전체 화면 높이에서 헤더 높이를 뺀 크기 */
-  }
-  
-  .project-header {
-    display: flex;
-    justify-content: flex-start;
-    margin-bottom: 20px;
-  }
-  
-  .project-header button {
-    padding: 0px;
-    width: 100px;
-    height: 30px;
-    background-color: white;
-    color: black;
-    border: 1px solid black;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  
-  /* 기준 테이블과 각 세션의 표에 동일한 스타일 적용 */
-  .task-table-header,
-  .task-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1.5fr 1.5fr 1.5fr 1.5fr 0.5fr 0.5fr 0.5fr 1.5fr;
-    gap: 0;
-    padding: 10px;
-    border-top: 1px solid #e4e4e4;
-    border-bottom: 1px solid #e4e4e4;
-  }
-  
-  /* 각 셀에 오른쪽 테두리 추가 */
-  .task-table-header div,
-  .task-row div {
-    border-right: 1px solid #ddd;
-    padding: 5px;
-    display: flex;
-    align-items: center;
-    justify-content: center; /* 텍스트를 가운데 정렬 */
-  }
-  
-  /* 마지막 셀의 오른쪽 테두리 제거 */
-  .task-table-header div:last-child,
-  .task-row div:last-child {
-    border-right: none;
-  }
-  
-  .task-section {
-    margin-bottom: 40px;
-  }
-  
-  .task-section h3 {
-    font-size: 18px;
-    margin-top: 20px;
-    margin-bottom: 10px;
-    color: #333;
-  }
-  
-  /* 드롭다운 및 입력 필드의 스타일 */
-  .task-row select,
-  .task-row input[type="text"],
-  .task-row input[type="number"] {
-    width: 100%;
-    padding: 5px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-    font-size: 14px;
-    background-color: #f9f9f9; /* 드롭다운 배경색 */
-    color: #333; /* 텍스트 색상 */
-  }
-  
-  /* 드롭다운 커스터마이징 */
-  .task-row select {
-    appearance: none; /* 기본 드롭다운 화살표 제거 */
-    background-image: url("data:image/svg+xml;utf8,<svg fill='gray' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>"); /* 커스텀 화살표 */
-    background-repeat: no-repeat;
-    background-position: right 10px center;
-    background-size: 12px;
-    border: 1px solid #ccc;
-  }
-  
-  .task-row select:hover {
-    border-color: #888;
-  }
-  
-  .task-row select:focus {
-    border-color: #1a73e8;
-    outline: none;
-  }
+  padding: 20px;
+  background-color: #f9f9f9;
+  margin-left: 250px;
+  padding-top: 70px;
+  overflow-y: auto;
+  height: calc(100vh - 70px);
+}
 
-  .status-select {
-    width: 100%;
-    padding: 5px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-    font-size: 14px;
-    background-color: #f9f9f9;
-  }
-  
-  .status-select.할일 {
-    background-color: #fbe698;
-    color: #b77e2e;
-  }
-  
-  .status-select.지연 {
-    background-color: #f3adac;
-    color: #c84241;
-  }
-  
-  .status-select.진행중 {
-    background-color: #d0eee6;
-    color: #1c6f50;
-  }
-  
-  .status-select.완료 {
-    background-color: #cbdbfc;
-    color: #3a6db6;
-  }
+.project-header {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 20px;
+}
 
-  .project-select {
-    width: 100%;
-    padding: 5px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-    font-size: 14px;
-    color: #333;
-  }
-  
-  /* 프로젝트명별 배경색 적용 */
-  .project-select.기타 {
-    background-color: #dddddd; /* 예시 색상: 회색 */
-  }
-  
-  .project-select.비대면 {
-    background-color: #56bc9d; /* 예시 색상: 노란색 */
-  }
-  
-  .project-select.CRO {
-    background-color: #4f71ca; /* 예시 색상: 빨간색 */
-  }
-  
-  .project-select.K-Health {
-    background-color: #b4dbd8; /* 예시 색상: 파란색 */
-  }
+.project-header button {
+  padding: 0px;
+  width: 100px;
+  height: 30px;
+  background-color: white;
+  color: black;
+  border: 1px solid black;
+  border-radius: 4px;
+  cursor: pointer;
+}
 
-  .category-select {
-    width: 100%;
-    padding: 5px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-    font-size: 14px;
-    background-color: #dddddd !important; /* 공통 배경색 */
-    color: #333;
-  }
+.task-table-header,
+.task-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.5fr 1.5fr 1.5fr 1.5fr 0.5fr 0.5fr 0.5fr 1.5fr;
+  gap: 0;
+  padding: 10px;
+  border-top: 1px solid #e4e4e4;
+  border-bottom: 1px solid #e4e4e4;
+}
 
-  
-  /* 테이블 행에 호버 시 색상 변화 */
-  .task-row:hover {
-    background-color: #f7f7f7;
-  }
-  
-  .no-tasks {
-    font-style: italic;
-    color: #888;
-  }
-  
+
+
+.task-table-header div,
+.task-row div {
+  border-right: 1px solid #ddd;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.task-table-header div:last-child,
+.task-row div:last-child {
+  border-right: none;
+}
+
+.task-section {
+  margin-bottom: 40px;
+}
+
+.task-section h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+/* 상태 셀 동적 색상 적용 */
+.status-select {
+  width: 100%;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.status-select.할일 {
+  background-color: #fbe698;
+  color: #b77e2e;
+}
+
+.status-select.지연 {
+  background-color: #f3adac;
+  color: #c84241;
+}
+
+.status-select.진행중 {
+  background-color: #d0eee6;
+  color: #1c6f50;
+}
+
+.status-select.완료 {
+  background-color: #cbdbfc;
+  color: #3a6db6;
+}
+
+/* 프로젝트명별 색상 */
+.project-select {
+  width: 100%;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.project-select.기타 {
+  background-color: #dddddd; /* 회색 */
+}
+
+.project-select.비대면 {
+  background-color: #56bc9d; /* 초록색 */
+}
+
+.project-select.CRO {
+  background-color: #4f71ca; /* 파란색 */
+}
+
+.project-select.K-Health {
+  background-color: #b4dbd8; /* 밝은 파란색 */
+}
+
+/* 카테고리 동적 스타일 */
+.category-select {
+  width: 100%;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  background-color: #f9f9f9;
+  color: #333;
+}
+
+.category-select.대분류 {
+  background-color: #ffe4c4; /* 베이지 */
+}
+
+.category-select.중분류 {
+  background-color: #f0f8ff; /* 옅은 하늘색 */
+}
+
+.category-select.소분류 {
+  background-color: #e6e6fa; /* 라벤더 */
+}
+
+/* 행 Hover */
+.task-row {
+  transition: background-color 0.3s;
+}
+
+.task-row:hover {
+  background-color: #f7f7f7;
+}
+
+/* 입력 필드 스타일 */
+.task-row input[type="text"],
+.task-row input[type="number"] {
+  width: 100%;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+/* 테이블 헤더 스타일 */
+.task-table-header {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+
+/* 작업이 없는 경우 스타일 */
+.no-tasks {
+  font-style: italic;
+  color: #888;
+}
+
+/* 드롭다운 커스터마이징 */
+.task-row select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg fill='gray' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px;
+  border: 1px solid #ccc;
+}
+
+.task-row select:hover {
+  border-color: #888;
+}
+
+.task-row select:focus {
+  border-color: #1a73e8;
+  outline: none;
+}
+/* 삭제 버튼 (쓰레기통 아이콘) */
+.delete-icon-button {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #ff4d4f;
+  cursor: pointer;
+  padding: 0;
+}
+
+.delete-icon-button:hover {
+  color: #d9363e;
+}
+
+/* 비고 열 스타일 (버튼 포함) */
+.task-row div:last-child {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
