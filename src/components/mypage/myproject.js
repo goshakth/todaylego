@@ -5,14 +5,16 @@ import './myproject.css';
 
 function MyProject() {
   const [tasks, setTasks] = useState([]);
-  const [categories, setCategories] = useState({});
+  const [projects, setProjects] = useState([]); // 프로젝트 데이터를 저장할 상태
+  const [categories, setCategories] = useState([]); // 대분류 데이터 저장
+  const [subcategories, setsubCategories] = useState([]); // 중분류 데이터 저장
   const [currentUserId, setCurrentUserId] = useState(null);
   const [newTask, setNewTask] = useState({
     date: new Date().toISOString().split('T')[0],
     status: '할일',
     projectName: '',
-    category1: '',
-    category2: '',
+    categoriesName: '',
+    subcategoriesName: '',
     category3: '',
     baseTime: 0,
     spentTime: 0,
@@ -21,6 +23,7 @@ function MyProject() {
     Usersid: '', // 사용자 ID 필드
   });
 
+  // 현재 로그인된 사용자 ID 가져오기
   useEffect(() => {
     const user = firebase.auth().currentUser;
     if (user) {
@@ -32,6 +35,7 @@ function MyProject() {
     }
   }, []);
 
+  // Firestore에서 작업 데이터 로드
   useEffect(() => {
     if (currentUserId) {
       db.collection('tasks')
@@ -48,17 +52,46 @@ function MyProject() {
     }
   }, [currentUserId]);
 
+  // Firestore에서 프로젝트 데이터 로드
+  useEffect(() => {
+    db.collection('projects')
+      .get()
+      .then((snapshot) => {
+        const fetchedProjects = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          name: doc.data().name,
+        }));
+        setProjects(fetchedProjects);
+      })
+      .catch((error) => console.error('Error fetching projects:', error));
+  }, []);
+
+  // Firestore에서 카테고리 대분류 데이터 로드
   useEffect(() => {
     db.collection('categories')
       .get()
       .then((snapshot) => {
-        const fetchedCategories = {};
-        snapshot.docs.forEach((doc) => {
-          fetchedCategories[doc.id] = doc.data().subcategories;
-        });
-        setCategories(fetchedCategories);
+        const fetchedcategories = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          name: doc.data().name,
+        }));
+        setCategories(fetchedcategories);
       })
       .catch((error) => console.error('Error fetching categories:', error));
+  }, []);
+
+  // Firestore에서 카테고리 중분류 데이터 로드
+  useEffect(() => {
+    db.collection('subcategories')
+      .get()
+      .then((snapshot) => {
+        const fetchedsubcategories = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          name: doc.data().name,
+        }));
+        setsubCategories(fetchedsubcategories);
+      })
+      .catch((error) => console.error('Error fetching subcategories:', error));
   }, []);
 
   const handleTaskInputChange = (field, value) => {
@@ -155,20 +188,48 @@ function MyProject() {
                       <option value="완료">● 완료</option>
                     </select>
                   </div>
-                  <div>{task.projectName}</div>
                   <div>
                     <select
-                      value={task.category1}
-                      onChange={(e) => updateTaskField(task.id, 'category1', e.target.value)}
+                      value={task.projectName}
+                      onChange={(e) => updateTaskField(task.id, 'projectName', e.target.value)}
+                      className={`project-select ${task.projectName}`}
                     >
-                      {Object.keys(categories).map((cat) => (
-                        <option key={cat} value={cat}>
-                          {cat}
+                      <option value="">사업명</option>
+                      {projects.map((project) => (
+                        <option key={project.id} value={project.name}>
+                          {project.name}
                         </option>
                       ))}
                     </select>
                   </div>
-                  <div>{task.category2}</div>
+                  <div>
+                    <select
+                      value={task.categoriesName}
+                      onChange={(e) => updateTaskField(task.id, 'categoriesName', e.target.value)}
+                      className={`category-select ${task.categoriesName}`}
+                    >
+                      <option value="">대분류</option>
+                      {categories.map((categories) => (
+                        <option key={categories.id} value={categories.name}>
+                          {categories.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <select
+                        value={task.subcategoriesName}
+                        onChange={(e) => updateTaskField(task.id, 'subcategoriesName', e.target.value)}
+                        className={`category-select ${task.subcategoriesName}`}
+                      >
+                        <option value="">중분류</option>
+                        {subcategories.map((subcategories) => (
+                          <option key={subcategories.id} value={subcategories.name}>
+                            {subcategories.name}
+                          </option>
+                        ))}
+                      </select>
+                  </div>
                   <div>{task.category3}</div>
                   <div>{task.baseTime}</div>
                   <div>

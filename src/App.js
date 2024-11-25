@@ -14,6 +14,7 @@ import Header from './components/Header/header';
 import Navbar from './components/Navbar/Navbar';
 import MyProject from './components/mypage/myproject';
 import MyDashboard from './components/mypage/mydashboard';
+import AddDepartment from './addDepartments';
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -33,6 +34,8 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/dashboard" element={<PrivateRoute><MyDashboard /></PrivateRoute>} />
           <Route path="/myproject" element={<PrivateRoute><MyProject /></PrivateRoute>} />
+          <Route path="/add-department" element={<PrivateRoute><AddDepartment /></PrivateRoute>} /> {/* 새 경로 추가 */}
+          
 
 
          
