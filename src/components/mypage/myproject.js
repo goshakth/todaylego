@@ -5,54 +5,59 @@ import './myproject.css';
 
 function MyProject() {
   const [tasks, setTasks] = useState([]);
-  const [projects, setProjects] = useState([]); // 프로젝트 데이터를 저장할 상태
-  const [categories, setCategories] = useState([]); // 대분류 데이터 저장
-  const [subcategories, setsubCategories] = useState([]); // 중분류 데이터 저장
+  const [projects, setProjects] = useState([]);
+  const [departmentData, setDepartmentData] = useState(null);
   const [currentUserId, setCurrentUserId] = useState(null);
-  const [newTask, setNewTask] = useState({
-    date: new Date().toISOString().split('T')[0],
-    status: '할일',
-    projectName: '',
-    categoriesName: '',
-    subcategoriesName: '',
-    category3: '',
-    baseTime: 0,
-    spentTime: 0,
-    remainingTime: 0,
-    note: '',
-    Usersid: '', // 사용자 ID 필드
-  });
 
-  // 현재 로그인된 사용자 ID 가져오기
   useEffect(() => {
     const user = firebase.auth().currentUser;
     if (user) {
       setCurrentUserId(user.uid);
-      setNewTask((prevTask) => ({
-        ...prevTask,
-        Usersid: user.uid,
-      }));
     }
   }, []);
 
-  // Firestore에서 작업 데이터 로드
   useEffect(() => {
     if (currentUserId) {
       db.collection('tasks')
         .where('Usersid', '==', currentUserId)
         .get()
         .then((snapshot) => {
-          const fetchedTasks = snapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }));
+          const fetchedTasks = snapshot.docs.map((doc) => {
+            const taskData = doc.data();
+            const category = departmentData.categories.find(
+              (cat) => cat.name === taskData.categoriesName
+            );
+            const subcategory = category.subcategories.find(
+              (sub) => sub.name === taskData.subcategoriesName
+            );
+  
+            return {
+              id: doc.id,
+              ...taskData,
+              availableSubcategories: category.subcategories || [],
+              availableSubSubcategories: subcategory.subsubcategories || [],
+            };
+          });
           setTasks(fetchedTasks);
         })
         .catch((error) => console.error('Error fetching tasks:', error));
     }
-  }, [currentUserId]);
+  }, [currentUserId, departmentData]);
+  
+  useEffect(() => {
+    db.collection('departments')
+      .doc('business')
+      .get()
+      .then((doc) => {
+        if (doc.exists) {
+          setDepartmentData(doc.data());
+        } else {
+          console.error('No such document!');
+        }
+      })
+      .catch((error) => console.error('Error fetching department data:', error));
+  }, []);
 
-  // Firestore에서 프로젝트 데이터 로드
   useEffect(() => {
     db.collection('projects')
       .get()
@@ -66,45 +71,41 @@ function MyProject() {
       .catch((error) => console.error('Error fetching projects:', error));
   }, []);
 
-  // Firestore에서 카테고리 대분류 데이터 로드
-  useEffect(() => {
-    db.collection('categories')
-      .get()
-      .then((snapshot) => {
-        const fetchedcategories = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          name: doc.data().name,
-        }));
-        setCategories(fetchedcategories);
-      })
-      .catch((error) => console.error('Error fetching categories:', error));
-  }, []);
-
-  // Firestore에서 카테고리 중분류 데이터 로드
-  useEffect(() => {
-    db.collection('subcategories')
-      .get()
-      .then((snapshot) => {
-        const fetchedsubcategories = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          name: doc.data().name,
-        }));
-        setsubCategories(fetchedsubcategories);
-      })
-      .catch((error) => console.error('Error fetching subcategories:', error));
-  }, []);
-
-  const handleTaskInputChange = (field, value) => {
-    const updatedTask = { ...newTask, [field]: value };
-
-    if (field === 'spentTime' || field === 'baseTime') {
-      const baseTime = field === 'baseTime' ? parseFloat(value) || 0 : newTask.baseTime;
-      const spentTime = field === 'spentTime' ? parseFloat(value) || 0 : newTask.spentTime;
-      updatedTask.remainingTime = baseTime - spentTime;
-    }
-
-    setNewTask(updatedTask);
+  const updateTaskField = (taskId, field, value) => {
+    setTasks((prevTasks) =>
+      prevTasks.map((task) =>
+        task.id === taskId
+          ? {
+              ...task,
+              [field]: value,
+              ...(field === 'categoriesName' && {
+                subcategoriesName: task.categoriesName === value ? task.subcategoriesName : '',
+                subsubcategoriesName: task.categoriesName === value ? task.subsubcategoriesName : '',
+                availableSubcategories:
+                  departmentData.categories.find(
+                    (category) => category.name === value
+                  ).subcategories || [],
+                availableSubSubcategories: [],
+              }),
+              ...(field === 'subcategoriesName' && {
+                subsubcategoriesName: task.subcategoriesName === value ? task.subsubcategoriesName : '',
+                availableSubSubcategories:
+                  task.availableSubcategories.find(
+                    (subcategory) => subcategory.name === value
+                  ).subsubcategories || [],
+              }),
+            }
+          : task
+      )
+    );
+  
+    db.collection('tasks')
+      .doc(taskId)
+      .update({ [field]: value })
+      .then(() => console.log(`Task ${taskId} updated: ${field} = ${value}`))
+      .catch((error) => console.error('Error updating task:', error));
   };
+  
 
   const addTask = () => {
     if (!currentUserId) {
@@ -112,31 +113,32 @@ function MyProject() {
       return;
     }
 
-    const taskToAdd = { ...newTask, Usersid: currentUserId };
+    const newTask = {
+      date: new Date().toISOString().split('T')[0],
+      status: '할일',
+      projectName: '',
+      categoriesName: '',
+      subcategoriesName: '',
+      subsubcategoriesName: '',
+      baseTime: 0,
+      spentTime: 0,
+      remainingTime: 0,
+      note: '',
+      Usersid: currentUserId,
+      availableSubcategories: [],
+      availableSubSubcategories: [],
+    };
 
     db.collection('tasks')
-      .add(taskToAdd)
+      .add(newTask)
       .then((docRef) => {
-        console.log('Task added with ID:', docRef.id);
-        setTasks((prevTasks) => [...prevTasks, { id: docRef.id, ...taskToAdd }]);
+        setTasks((prevTasks) => [
+          ...prevTasks,
+          { id: docRef.id, ...newTask },
+        ]);
+        console.log('Task added:', docRef.id);
       })
       .catch((error) => console.error('Error adding task:', error));
-  };
-
-  const updateTaskField = (taskId, field, value) => {
-    setTasks((prevTasks) =>
-      prevTasks.map((task) => (task.id === taskId ? { ...task, [field]: value } : task))
-    );
-
-    db.collection('tasks')
-      .doc(taskId)
-      .update({ [field]: value })
-      .then(() => console.log('Task updated:', taskId))
-      .catch((error) => console.error('Error updating task:', error));
-  };
-
-  const updateTaskStatus = (taskId, newStatus) => {
-    updateTaskField(taskId, 'status', newStatus);
   };
 
   const deleteTask = (taskId) => {
@@ -144,8 +146,8 @@ function MyProject() {
       .doc(taskId)
       .delete()
       .then(() => {
-        console.log('Task deleted:', taskId);
         setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
+        console.log('Task deleted:', taskId);
       })
       .catch((error) => console.error('Error deleting task:', error));
   };
@@ -174,24 +176,28 @@ function MyProject() {
             {tasks
               .filter((task) => task.status === status)
               .map((task) => (
-                <div className={`task-row ${task.projectName.replace(' ', '-')} ${task.status}`} key={task.id}>
+                <div className={`task-row ${task.status}`} key={task.id}>
                   <div>{task.date}</div>
                   <div>
                     <select
                       value={task.status}
-                      onChange={(e) => updateTaskStatus(task.id, e.target.value)}
+                      onChange={(e) =>
+                        updateTaskField(task.id, 'status', e.target.value)
+                      }
                       className={`status-select ${task.status}`}
                     >
-                      <option value="할일">● 할일</option>
-                      <option value="지연">● 지연</option>
-                      <option value="진행중">● 진행중</option>
-                      <option value="완료">● 완료</option>
+                      <option value="할일">할일</option>
+                      <option value="지연">지연</option>
+                      <option value="진행중">진행중</option>
+                      <option value="완료">완료</option>
                     </select>
                   </div>
                   <div>
                     <select
                       value={task.projectName}
-                      onChange={(e) => updateTaskField(task.id, 'projectName', e.target.value)}
+                      onChange={(e) =>
+                        updateTaskField(task.id, 'projectName', e.target.value)
+                      }
                       className={`project-select ${task.projectName}`}
                     >
                       <option value="">사업명</option>
@@ -205,38 +211,70 @@ function MyProject() {
                   <div>
                     <select
                       value={task.categoriesName}
-                      onChange={(e) => updateTaskField(task.id, 'categoriesName', e.target.value)}
-                      className={`category-select ${task.categoriesName}`}
+                      onChange={(e) =>
+                        updateTaskField(task.id, 'categoriesName', e.target.value)
+                      }
+                      className="category-select"
                     >
                       <option value="">대분류</option>
-                      {categories.map((categories) => (
-                        <option key={categories.id} value={categories.name}>
-                          {categories.name}
+                      {departmentData.categories.map((category) => (
+                        <option key={category.id} value={category.name}>
+                          {category.name}
                         </option>
                       ))}
                     </select>
                   </div>
                   <div>
                     <select
-                        value={task.subcategoriesName}
-                        onChange={(e) => updateTaskField(task.id, 'subcategoriesName', e.target.value)}
-                        className={`category-select ${task.subcategoriesName}`}
-                      >
-                        <option value="">중분류</option>
-                        {subcategories.map((subcategories) => (
-                          <option key={subcategories.id} value={subcategories.name}>
-                            {subcategories.name}
-                          </option>
-                        ))}
-                      </select>
+                      value={task.subcategoriesName}
+                      onChange={(e) =>
+                        updateTaskField(
+                          task.id,
+                          'subcategoriesName',
+                          e.target.value
+                        )
+                      }
+                      className="category-select 중분류"
+                    >
+                      <option value="">중분류</option>
+                      {task.availableSubcategories.map((subcategory) => (
+                        <option key={subcategory.id} value={subcategory.name}>
+                          {subcategory.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                  <div>{task.category3}</div>
+                  <div>
+                    <select
+                      value={task.subsubcategoriesName}
+                      onChange={(e) =>
+                        updateTaskField(
+                          task.id,
+                          'subsubcategoriesName',
+                          e.target.value
+                        )
+                      }
+                      className="category-select 소분류"
+                    >
+                      <option value="">소분류</option>
+                      {task.availableSubSubcategories.map((subSubcategory) => (
+                        <option
+                          key={subSubcategory.id}
+                          value={subSubcategory.name}
+                        >
+                          {subSubcategory.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                   <div>{task.baseTime}</div>
                   <div>
                     <input
                       type="number"
                       value={task.spentTime}
-                      onChange={(e) => updateTaskField(task.id, 'spentTime', e.target.value)}
+                      onChange={(e) =>
+                        updateTaskField(task.id, 'spentTime', e.target.value)
+                      }
                     />
                   </div>
                   <div>{task.remainingTime}</div>
@@ -244,12 +282,13 @@ function MyProject() {
                     <input
                       type="text"
                       value={task.note}
-                      onChange={(e) => updateTaskField(task.id, 'note', e.target.value)}
+                      onChange={(e) =>
+                        updateTaskField(task.id, 'note', e.target.value)
+                      }
                     />
                     <button
                       onClick={() => deleteTask(task.id)}
                       className="delete-icon-button"
-                      title="삭제"
                     >
                       🗑️
                     </button>

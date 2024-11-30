@@ -126,18 +126,6 @@
   color: #333;
 }
 
-.category-select.대분류 {
-  background-color: #ffe4c4; /* 베이지 */
-}
-
-.category-select.중분류 {
-  background-color: #f0f8ff; /* 옅은 하늘색 */
-}
-
-.category-select.소분류 {
-  background-color: #e6e6fa; /* 라벤더 */
-}
-
 /* 행 Hover */
 .task-row {
   transition: background-color 0.3s;
