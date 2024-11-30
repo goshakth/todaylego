@@ -71,6 +71,34 @@ function MyProject() {
       .catch((error) => console.error('Error fetching projects:', error));
   }, []);
 
+    // 동기화 useEffect 추가
+    useEffect(() => {
+      tasks.forEach((task) => {
+        const baseTime = task.baseTime || 0;
+        const spentTime = parseFloat(task.spentTime) || 0;
+        const remainingTime = baseTime - spentTime;
+  
+        // 상태값 계산
+        const updatedStatus =
+          task.status === '완료'
+            ? '완료'
+            : remainingTime < 0
+            ? '지연'
+            : '할일';
+  
+        // Firebase 동기화
+        if (task.remainingTime !== remainingTime || task.status !== updatedStatus) {
+          db.collection('tasks')
+            .doc(task.id)
+            .update({ remainingTime, status: updatedStatus })
+            .then(() =>
+              console.log(`Updated task: ${task.id}, Remaining Time: ${remainingTime}, Status: ${updatedStatus}`)
+            )
+            .catch((error) => console.error('Error updating task:', error));
+        }
+      });
+    }, [tasks]);
+
   const updateTaskField = (taskId, field, value) => {
     setTasks((prevTasks) =>
       prevTasks.map((task) =>
@@ -94,14 +122,46 @@ function MyProject() {
                     (subcategory) => subcategory.name === value
                   ).subsubcategories || [],
               }),
+              ...(field === 'spentTime' && {
+                remainingTime: (() => {
+                  const baseTime = task.baseTime || 0; // 기준 시간
+                  const spentTime = Math.max(0, parseFloat(value)) || 0; // 소요 시간
+                  return baseTime - spentTime;
+                })(),
+                status: (() => {
+                  const baseTime = task.baseTime || 0;
+                  const spentTime = Math.max(0, parseFloat(value)) || 0;
+                  const remainingTime = baseTime - spentTime;
+  
+                  // 상태 변경 로직
+                  if (remainingTime < 0) return '지연'; // 잔여 시간이 음수일 경우 '지연'
+                  if (task.status === '완료') return '완료'; // 상태가 이미 '완료'일 경우 유지
+                  return '할일'; // 기본 상태
+                })(),
+              }), 
             }
           : task
       )
     );
-  
+    
+     // Firestore 업데이트
+  const currentTask = tasks.find((task) => task.id === taskId);
+  const baseTime = currentTask.baseTime || 0; // 기준 시간
+  const spentTime =
+    field === 'spentTime' ? Math.max(0, parseFloat(value)) || 0 : currentTask.spentTime || 0; // 소요 시간
+  const remainingTime = baseTime - spentTime;
+
+  const updateData = {
+    [field]: value,
+    ...(field === 'spentTime' && {
+      remainingTime,
+      status: remainingTime < 0 ? '지연' : currentTask.status === '완료' ? '완료' : '할일',
+    }),
+  };
+ 
     db.collection('tasks')
       .doc(taskId)
-      .update({ [field]: value })
+      .update(updateData)
       .then(() => console.log(`Task ${taskId} updated: ${field} = ${value}`))
       .catch((error) => console.error('Error updating task:', error));
   };
@@ -164,9 +224,9 @@ function MyProject() {
         <div>대분류</div>
         <div>중분류</div>
         <div>소분류</div>
-        <div>기준 시간</div>
-        <div>소요 시간</div>
-        <div>잔여 시간</div>
+        <div>기준시간</div>
+        <div>소요시간</div>
+        <div>잔여시간</div>
         <div>비고</div>
       </div>
       <div className="task-sections">
@@ -267,7 +327,25 @@ function MyProject() {
                       ))}
                     </select>
                   </div>
-                  <div>{task.baseTime}</div>
+                  <div>
+                  {task.availableSubSubcategories
+                    .filter(
+                      (subSubcategory) =>
+                        subSubcategory.name === task.subsubcategoriesName
+                    )
+                    .map((subSubcategory) => {
+                      const baseTime = subSubcategory.baseTime || 0;
+
+                      // 서버 업데이트
+                      if (task.baseTime !== baseTime) {
+                        updateTaskField(task.id, 'baseTime', baseTime);
+                      }
+
+                      return (
+                        <span key={subSubcategory.id}>{baseTime}</span>
+                      );
+                    })}
+                  </div>
                   <div>
                     <input
                       type="number"
@@ -277,7 +355,19 @@ function MyProject() {
                       }
                     />
                   </div>
-                  <div>{task.remainingTime}</div>
+                  <div>
+                    <span
+                        style={{
+                          color: task.status === '완료' ? 'blue' : task.remainingTime < 0 ? 'red' : 'black',
+                        }}
+                      >
+                        {task.status === '완료'
+                          ? '완료'
+                          : task.remainingTime < 0
+                          ? '지연'
+                          : task.remainingTime}
+                      </span>
+                  </div>
                   <div>
                     <input
                       type="text"

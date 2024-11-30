@@ -60,8 +60,6 @@ const MyDashboard = () => {
   const [chartData, setChartData] = useState({
     projectSeries: [],
     projectLabels: [],
-    weeklySeries: [],
-    weeklyLabels: [],
   });
 
   const [currentUserId, setCurrentUserId] = useState(null);
@@ -108,32 +106,19 @@ const MyDashboard = () => {
           columns,
         }));
 
-        // 차트 데이터 계산
+        // 프로젝트별 소요시간 계산
         const projectTimeMap = {};
-        const weeklyTimeMap = {};
 
         fetchedTasks.forEach((task) => {
           if (!projectTimeMap[task.projectName]) {
             projectTimeMap[task.projectName] = 0;
           }
-          projectTimeMap[task.projectName] += task.spentTime || 0;
-
-          const parsedDate = new Date(task.date);
-          const weekLabel = !isNaN(parsedDate.getTime())
-            ? parsedDate.toISOString().split('T')[0]
-            : new Date().toISOString().split('T')[0];
-
-          if (!weeklyTimeMap[weekLabel]) {
-            weeklyTimeMap[weekLabel] = 0;
-          }
-          weeklyTimeMap[weekLabel] += task.spentTime || 0;
+          projectTimeMap[task.projectName] += parseFloat(task.spentTime) || 0;
         });
 
         setChartData({
           projectSeries: Object.values(projectTimeMap),
           projectLabels: Object.keys(projectTimeMap),
-          weeklySeries: [{ name: '시간', data: Object.values(weeklyTimeMap) }],
-          weeklyLabels: Object.keys(weeklyTimeMap),
         });
       } catch (error) {
         console.error('Error fetching tasks:', error);
@@ -199,30 +184,15 @@ const MyDashboard = () => {
     legend: { show: false },
   };
 
-  const weeklyChartOptions = {
-    chart: { type: 'bar', height: 350 },
-    xaxis: { categories: chartData.weeklyLabels },
-    colors: ['#34c38f'],
-  };
-
   return (
     <div className="my-dashboard">
       <div className="dashboard-section">
         <div className="chart-container pie-chart">
-          <h3>월간 투입시간</h3>
+          <h3>프로젝트별 투입 시간</h3>
           <Chart
             options={monthlyChartOptions}
             series={chartData.projectSeries}
             type="donut"
-            height={300}
-          />
-        </div>
-        <div className="chart-container bar-chart">
-          <h3>주간 투입시간</h3>
-          <Chart
-            options={weeklyChartOptions}
-            series={chartData.weeklySeries}
-            type="bar"
             height={300}
           />
         </div>
