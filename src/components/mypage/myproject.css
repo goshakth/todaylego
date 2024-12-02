@@ -115,6 +115,7 @@
   background-color: #b4dbd8; /* 밝은 파란색 */
 }
 
+
 /* 카테고리 동적 스타일 */
 .category-select {
   width: 100%;
@@ -194,4 +195,68 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+/* 드롭다운 메뉴 스타일 */
+.custom-select__menu {
+  display: block ; /* 한 줄에 하나씩 배치 */
+  width: 100%; /* 부모 요소 크기에 맞춤 */
+  z-index: 10; /* 겹침 방지 */
+  background-color: #fff; /* 배경색 */
+  border-radius: 4px; /* 모서리 둥글기 */
+  max-height: 200px; /* 최대 높이 */
+  overflow-y: auto; /* 스크롤 가능 */
+}
+
+/* 드롭다운 옵션 스타일 */
+.custom-select__option {
+  display: block ; /* 한 줄에 하나씩 배치 */
+  font-size: 14px; /* 폰트 크기 */
+  color: #333; /* 텍스트 색상 */
+  border: none;
+  background-color: #fff; /* 기본 배경색 */
+  cursor: pointer; /* 마우스 포인터 */
+  transition: background-color 0.2s ease-in-out; /* 배경색 변경 효과 */
+}
+
+.custom-select__option:hover {
+  background-color: #f2f2f2; /* Hover 배경색 */
+}
+
+.custom-select__option--is-selected {
+  background-color: #cbdbfc; /* 선택된 옵션 배경색 */
+  color: #3a6db6; /* 선택된 옵션 텍스트 색상 */
+}
+
+/* 선택된 값 스타일 */
+.custom-select__single-value {
+  font-size: 14px; /* 폰트 크기 */
+  color: #333; /* 텍스트 색상 */
+}
+
+/* 컨트롤 (선택 박스) 스타일 */
+.custom-select__control {
+  display: block ; /* 한 줄에 하나씩 배치 */
+  min-height: 35px; /* 높이 */
+  font-size: 14px; /* 폰트 크기 */
+  border-radius: 4px; /* 모서리 둥글기 */
+  background-color: #fff;  /* 배경색 */
+  display: flex;
+  align-items: center; /* 텍스트 가운데 정렬 */
+  transition: border-color 0.2s ease-in-out; /* 테두리 색상 변경 효과 */
+}
+
+.custom-select__control:hover {
+  border-color: #888; /* Hover 시 테두리 색상 */
+}
+
+.custom-select__control--is-focused {
+  border-color: #1a73e8; /* 포커스된 테두리 색상 */
+  box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.3); /* 포커스 아웃라인 */
+}
+
+/* 플레이스홀더 스타일 */
+.custom-select__placeholder {
+  font-size: 14px; /* 폰트 크기 */
+  color: #888; /* 플레이스홀더 색상 */
 }

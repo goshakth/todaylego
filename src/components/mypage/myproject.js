@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Select from 'react-select';
 import { db } from '../../firebase'; // Firestore 인스턴스 가져오기
 import firebase from 'firebase/app';
 import './myproject.css';
@@ -6,7 +7,8 @@ import './myproject.css';
 function MyProject() {
   const [tasks, setTasks] = useState([]);
   const [projects, setProjects] = useState([]);
-  const [departmentData, setDepartmentData] = useState(null);
+  const [departmentData, setDepartmentData] = useState({ categories: [] });
+  //const [departmentData, setDepartmentData] = useState(null);
   const [currentUserId, setCurrentUserId] = useState(null);
 
   useEffect(() => {
@@ -27,22 +29,27 @@ function MyProject() {
             const category = departmentData.categories.find(
               (cat) => cat.name === taskData.categoriesName
             );
-            const subcategory = category.subcategories.find(
-              (sub) => sub.name === taskData.subcategoriesName
-            );
+            const subcategory = category
+              ? category.subcategories.find(
+                  (sub) => sub.name === taskData.subcategoriesName
+                )
+              : null;
   
             return {
               id: doc.id,
               ...taskData,
-              availableSubcategories: category.subcategories || [],
-              availableSubSubcategories: subcategory.subsubcategories || [],
+              availableSubcategories: category ? category.subcategories : [],
+              availableSubSubcategories: subcategory
+                ? subcategory.subsubcategories
+                : [],
             };
           });
-          setTasks(fetchedTasks);
+          setTasks(fetchedTasks); // 상태 업데이트
         })
         .catch((error) => console.error('Error fetching tasks:', error));
     }
   }, [currentUserId, departmentData]);
+  
   
   useEffect(() => {
     db.collection('departments')
@@ -66,7 +73,12 @@ function MyProject() {
           id: doc.id,
           name: doc.data().name,
         }));
-        setProjects(fetchedProjects);
+        // React-Select의 options 형식으로 변환
+        const formattedOptions = fetchedProjects.map((project) => ({
+          value: project.name, // value 필드
+          label: project.name, // label 필드 (검색 및 표시용)
+        }));
+        setProjects(formattedOptions);
       })
       .catch((error) => console.error('Error fetching projects:', error));
   }, []);
@@ -78,13 +90,13 @@ function MyProject() {
         const spentTime = parseFloat(task.spentTime) || 0;
         const remainingTime = baseTime - spentTime;
   
-        // 상태값 계산
+        // 상태를 덮어쓰지 않고 현재 상태 유지
         const updatedStatus =
-          task.status === '완료'
-            ? '완료'
-            : remainingTime < 0
-            ? '지연'
-            : '할일';
+        task.status === '완료'
+          ? '완료'
+          : remainingTime < 0
+          ? '지연'
+          : task.status; // 기존 상태 유지
   
         // Firebase 동기화
         if (task.remainingTime !== remainingTime || task.status !== updatedStatus) {
@@ -136,6 +148,7 @@ function MyProject() {
                   // 상태 변경 로직
                   if (remainingTime < 0) return '지연'; // 잔여 시간이 음수일 경우 '지연'
                   if (task.status === '완료') return '완료'; // 상태가 이미 '완료'일 경우 유지
+                  if (task.status === '진행중' || spentTime > 0) return '진행중'; // 소요 시간이 0보다 크거나 상태가 '진행중'일 경우 유지
                   return '할일'; // 기본 상태
                 })(),
               }), 
@@ -253,20 +266,15 @@ function MyProject() {
                     </select>
                   </div>
                   <div>
-                    <select
-                      value={task.projectName}
-                      onChange={(e) =>
-                        updateTaskField(task.id, 'projectName', e.target.value)
-                      }
-                      className={`project-select ${task.projectName}`}
-                    >
-                      <option value="">사업명</option>
-                      {projects.map((project) => (
-                        <option key={project.id} value={project.name}>
-                          {project.name}
-                        </option>
-                      ))}
-                    </select>
+                  <Select
+                    options={projects}
+                    value={projects.find((project) => project.value === task.projectName)}
+                    onChange={(selectedOption) =>
+                      updateTaskField(task.id, 'projectName', selectedOption.value)
+                    }
+                    placeholder="사업명"
+                    classNamePrefix="custom-select" // 접두사 지정
+                  />
                   </div>
                   <div>
                     <select
