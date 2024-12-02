@@ -7,6 +7,31 @@
   height: calc(100vh - 70px);
 }
 
+.filters {
+  display: flex;
+  justify-content: flex-end;
+  font-weight: bold;
+  margin-bottom: 20px;
+  gap: 10px;
+}
+
+.filters select {
+  padding: 5px 25px;
+  border: 1px solid #ccc;
+  align-items: flex-end;
+  font-weight: bold;
+  border-radius: 4px;
+  background-color: #dddddd;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.filters select:focus {
+  outline: none;
+  border-color: #007bff;
+  background-color: #dddddd;
+}
+
 .dashboard-section {
   display: flex;
   justify-content: space-between;

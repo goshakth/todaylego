@@ -45,7 +45,6 @@ const Column = ({ column, tasks, moveTask }) => {
 };
 
 const MyDashboard = () => {
-  const totalMonthlyHours = 191;
   const [kanbanData, setKanbanData] = useState({
     tasks: [],
     columns: {
@@ -144,6 +143,7 @@ const MyDashboard = () => {
   
         // 차트 데이터 계산
         const projectTimeMap = {};
+        const projectWeeklyData = {};
         const weeklyTimeMap = [0, 0, 0, 0];
   
         fetchedTasks.forEach((task) => {
@@ -156,6 +156,10 @@ const MyDashboard = () => {
         
           // 주별 집계
           const weekIndex = Math.floor((taskDate.getDate() - 1) / 7);
+          if (!projectWeeklyData[projectName]) {
+            projectWeeklyData[projectName] = [0, 0, 0, 0];
+          }
+          projectWeeklyData[projectName][weekIndex] += spentTime;
           weeklyTimeMap[weekIndex] += spentTime;
           
           console.log('Processing Task:', {
@@ -168,6 +172,15 @@ const MyDashboard = () => {
         });
         console.log('Project Time Map:', projectTimeMap);
         console.log('Weekly Time Map:', weeklyTimeMap);
+        console.log('Project Weekly Data:', projectWeeklyData);
+
+
+        const weeklyChartSeries = Object.keys(projectWeeklyData).map((projectName) => ({
+          name: projectName,
+          data: projectWeeklyData[projectName],
+        }));
+
+        console.log('Weekly Chart Series:', weeklyChartSeries);
   
         if (Object.keys(projectTimeMap).length === 0) {
           console.warn('No project data available.');
@@ -246,14 +259,71 @@ const MyDashboard = () => {
         },
       },
     },
-    legend: { show: true },
+    legend: {
+      position: 'right',
+      horizontalAlign: 'center',
+      fontSize: '15px',
+      formatter: (seriesName, opts) => {
+        const index = opts.seriesIndex;
+        const hours = chartData.projectSeries[index];
+        const totalHours = chartData.projectSeries.reduce((a, b) => a + b, 0);
+        const percentage = ((hours / totalHours) * 100).toFixed(1);
+
+        return `
+          <div style="display: flex; align-items: flex-start; justify-content: space-between; width: 300px;">
+            <span style="font-weight: bold; color: #333;">${seriesName}</span>
+            <span>${hours} h (${percentage}%)</span>
+          </div>
+        `;
+      },
+    },
+    tooltip: {
+      y: {
+        formatter: (val) => `${val} h`,
+      },
+    },
   };
 
   const weeklyChartOptions = {
-    chart: { type: 'bar', height: 350 },
-    xaxis: { categories: chartData.weeklyLabels },
-    dataLabels: { enabled: false },
+    chart: {
+      type: 'bar',
+      stacked: true,
+      height: 350,
+    },
+    plotOptions: {
+      bar: {
+        horizontal: false,
+        borderRadius: 4,
+      },
+    },
+    dataLabels: {
+      enabled: true,
+      formatter: function (val, opts) {
+        const total = opts.w.globals.stackedSeriesTotals[opts.dataPointIndex];
+        return opts.seriesIndex === opts.w.globals.series.length - 1 ? `${total} h` : '';
+      },
+      offsetY: -10,
+      style: {
+        colors: ['#000'],
+      },
+    },
+    xaxis: {
+      categories: chartData.weeklyLabels,
+    },
+    yaxis: {
+      title: {
+        text: '시간',
+      },
+    },
+    legend: {
+      position: 'top',
+    },
+    fill: {
+      opacity: 1,
+    },
   };
+
+
 
   return (
     <div className="my-dashboard">
@@ -284,6 +354,7 @@ const MyDashboard = () => {
               type="donut"
               height={300}
             />
+            
           ) : (
             <p>월간 데이터를 불러오는 중입니다...</p>
           )}
