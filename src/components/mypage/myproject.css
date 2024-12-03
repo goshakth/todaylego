@@ -7,7 +7,7 @@
   height: calc(100vh - 70px);
 }
 
-.project-header {
+.myproject-project-header {
   display: flex;
   justify-content: flex-start;
   margin-bottom: 20px;
@@ -24,8 +24,8 @@
   cursor: pointer;
 }
 
-.task-table-header,
-.task-row {
+.myproject-task-table-header,
+.myproject-task-row {
   display: grid;
   grid-template-columns: 1fr 1fr 1.5fr 1.5fr 1.5fr 1.5fr 0.5fr 0.5fr 0.5fr 1.5fr;
   gap: 0;
@@ -36,8 +36,8 @@
 
 
 
-.task-table-header div,
-.task-row div {
+.myproject-task-table-header div,
+.myproject-task-row div {
   border-right: 1px solid #ddd;
   padding: 5px;
   display: flex;
@@ -45,16 +45,16 @@
   justify-content: center;
 }
 
-.task-table-header div:last-child,
-.task-row div:last-child {
+.myproject-task-table-header div:last-child,
+.myproject-task-row div:last-child {
   border-right: none;
 }
 
-.task-section {
+.myproject-task-section {
   margin-bottom: 40px;
 }
 
-.task-section h3 {
+.myproject-task-section h3 {
   font-size: 18px;
   margin-top: 20px;
   margin-bottom: 10px;
@@ -62,7 +62,7 @@
 }
 
 /* 상태 셀 동적 색상 적용 */
-.status-select {
+.myproject-status-select {
   width: 100%;
   padding: 5px;
   border: 1px solid #ccc;
@@ -70,22 +70,22 @@
   font-size: 14px;
 }
 
-.status-select.할일 {
+.myproject-status-select.할일 {
   background-color: #fbe698;
   color: #b77e2e;
 }
 
-.status-select.지연 {
+.myproject-status-select.지연 {
   background-color: #f3adac;
   color: #c84241;
 }
 
-.status-select.진행중 {
+.myproject-status-select.진행중 {
   background-color: #d0eee6;
   color: #1c6f50;
 }
 
-.status-select.완료 {
+.myproject-status-select.완료 {
   background-color: #cbdbfc;
   color: #3a6db6;
 }
@@ -107,17 +107,17 @@
   background-color: #56bc9d; /* 초록색 */
 }
 
-.project-select.CRO {
+.myproject-project-select.CRO {
   background-color: #4f71ca; /* 파란색 */
 }
 
-.project-select.K-Health {
+.myproject-project-select.K-Health {
   background-color: #b4dbd8; /* 밝은 파란색 */
 }
 
 
 /* 카테고리 동적 스타일 */
-.category-select {
+.myproject-category-select {
   width: 100%;
   padding: 5px;
   border: 1px solid #ccc;
@@ -128,17 +128,17 @@
 }
 
 /* 행 Hover */
-.task-row {
+.myproject-task-row {
   transition: background-color 0.3s;
 }
 
-.task-row:hover {
+.myproject-task-row:hover {
   background-color: #f7f7f7;
 }
 
 /* 입력 필드 스타일 */
-.task-row input[type="text"],
-.task-row input[type="number"] {
+.myproject-task-row input[type="text"],
+.myproject-task-row input[type="number"] {
   width: 100%;
   padding: 5px;
   border: 1px solid #ccc;
@@ -147,19 +147,19 @@
 }
 
 /* 테이블 헤더 스타일 */
-.task-table-header {
+.myproject-task-table-header {
   background-color: #f2f2f2;
   font-weight: bold;
 }
 
 /* 작업이 없는 경우 스타일 */
-.no-tasks {
+.myproject-no-tasks {
   font-style: italic;
   color: #888;
 }
 
 /* 드롭다운 커스터마이징 */
-.task-row select {
+.myproject-task-row select {
   appearance: none;
   background-image: url("data:image/svg+xml;utf8,<svg fill='gray' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
   background-repeat: no-repeat;
@@ -168,16 +168,16 @@
   border: 1px solid #ccc;
 }
 
-.task-row select:hover {
+.myproject-task-row select:hover {
   border-color: #888;
 }
 
-.task-row select:focus {
+.myproject-task-row select:focus {
   border-color: #1a73e8;
   outline: none;
 }
 /* 삭제 버튼 (쓰레기통 아이콘) */
-.delete-icon-button {
+.myproject-delete-icon-button {
   background: none;
   border: none;
   font-size: 18px;
@@ -186,19 +186,19 @@
   padding: 0;
 }
 
-.delete-icon-button:hover {
+.myproject-delete-icon-button:hover {
   color: #d9363e;
 }
 
 /* 비고 열 스타일 (버튼 포함) */
-.task-row div:last-child {
+.myproject-task-row div:last-child {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
 /* 드롭다운 메뉴 스타일 */
-.custom-select__menu {
+.myproject-custom-select__menu {
   display: block ; /* 한 줄에 하나씩 배치 */
   width: 100%; /* 부모 요소 크기에 맞춤 */
   z-index: 10; /* 겹침 방지 */
@@ -209,7 +209,7 @@
 }
 
 /* 드롭다운 옵션 스타일 */
-.custom-select__option {
+.myproject-custom-select__option {
   display: block ; /* 한 줄에 하나씩 배치 */
   font-size: 14px; /* 폰트 크기 */
   color: #333; /* 텍스트 색상 */
@@ -219,23 +219,23 @@
   transition: background-color 0.2s ease-in-out; /* 배경색 변경 효과 */
 }
 
-.custom-select__option:hover {
+.myproject-custom-select__option:hover {
   background-color: #f2f2f2; /* Hover 배경색 */
 }
 
-.custom-select__option--is-selected {
+.myproject-custom-select__option--is-selected {
   background-color: #cbdbfc; /* 선택된 옵션 배경색 */
   color: #3a6db6; /* 선택된 옵션 텍스트 색상 */
 }
 
 /* 선택된 값 스타일 */
-.custom-select__single-value {
+.myproject-custom-select__single-value {
   font-size: 14px; /* 폰트 크기 */
   color: #333; /* 텍스트 색상 */
 }
 
 /* 컨트롤 (선택 박스) 스타일 */
-.custom-select__control {
+.myproject-custom-select__control {
   display: block ; /* 한 줄에 하나씩 배치 */
   min-height: 35px; /* 높이 */
   font-size: 14px; /* 폰트 크기 */
@@ -246,17 +246,17 @@
   transition: border-color 0.2s ease-in-out; /* 테두리 색상 변경 효과 */
 }
 
-.custom-select__control:hover {
+.myproject-custom-select__control:hover {
   border-color: #888; /* Hover 시 테두리 색상 */
 }
 
-.custom-select__control--is-focused {
+.myproject-custom-select__control--is-focused {
   border-color: #1a73e8; /* 포커스된 테두리 색상 */
   box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.3); /* 포커스 아웃라인 */
 }
 
 /* 플레이스홀더 스타일 */
-.custom-select__placeholder {
+.myproject-custom-select__placeholder {
   font-size: 14px; /* 폰트 크기 */
   color: #888; /* 플레이스홀더 색상 */
 }

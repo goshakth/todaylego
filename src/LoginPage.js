@@ -13,20 +13,9 @@ const LoginPage = () => {
   const [errorMsg, setErrorMsg] = useState('');
 
   const handleIsAdmin = async (email_handle, userDocSnapshot) => {
-    if (userDocSnapshot.data().isSuperUser) {
-      return true;
-    } else {
-      const joinClubCollectionSnapshot = await firebase.firestore().collection('Users').doc(email_handle).collection("JoinClub").get();
-      if (!joinClubCollectionSnapshot.empty) {
-        for (const doc of joinClubCollectionSnapshot.docs) {
-          if (doc.data().user_role === '1') {
-            return true;
-          }
-        }
-      }
-    }
-    return false;
-  }
+    return userDocSnapshot.data().isSuperUser || false;
+  };
+  
 
   const signInWithGoogle = async () => {
     try {
@@ -36,6 +25,8 @@ const LoginPage = () => {
       const email = result.user.email;
       const email_handle = email.substring(0, email.lastIndexOf("@"));
       const domain = email.substring(email.lastIndexOf("@") + 1);
+
+      const uid = result.user.uid; // Firebase Auth UID 가져오기
 
       if (domain !== 'gmail.com') {
         await auth.signOut();
@@ -49,14 +40,26 @@ const LoginPage = () => {
           await userDocRef.set({
             email: email,
             isSuperUser: false,
+            Usersid: uid, // Firebase UID를 Users 컬렉션에 추가
+          });
+        }else {
+          // 기존 사용자 문서 업데이트 (필요한 경우)
+          await userDocRef.update({
+            Usersid: uid, // UID가 이미 있더라도 항상 업데이트 가능
           });
         }
         
         const isAdminStatus = await handleIsAdmin(email_handle, userDocSnapshot);
         setIsAdmin(isAdminStatus);
 
-        let { from } = location.state || { from: { pathname: "/dashboard" } }; // 로그인시 바로 데시보드로 241122 taek
-        navigate(from);
+        //let { from } = location.state || { from: { pathname: isAdmin ? "/admindash" : "/dashboard" } }; // 로그인한 사용자가 어드민인지(isAdmin 값이 true인지) 확인
+        //navigate(from);
+        // isAdmin 상태에 따른 페이지 리디렉션
+        if (isAdminStatus) {
+          navigate('/admindash'); // 관리자는 관리자 페이지로 이동
+        } else {
+          navigate('/dashboard'); // 일반 사용자는 대시보드로 이동
+        }
       }
     } catch (error) {
       console.log(error.message);

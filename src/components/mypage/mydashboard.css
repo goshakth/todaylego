@@ -89,6 +89,18 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   font-size: 14px;
   transition: background-color 0.2s ease;
+
+}
+
+.kanban-task .subcategory-box {
+  margin-top: 5px;
+  padding: 5px;
+  background-color: #d8d8d8;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 12px;
+  width: 70%;
+  color: #555;
 }
 
 .kanban-task:hover {
@@ -99,7 +111,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 5px;
+  margin-bottom: 0px;
 }
 
 .task-dot {
@@ -119,10 +131,63 @@
   color: #333;
 }
 
+.task-row {
+  display: flex;
+  border: none;
+  align-items: center; /* 세로 가운데 정렬 */
+  justify-content: space-between; /* 좌우로 배치 */
+  gap: 10px; /* 요소 간 간격 최소화 */
+  padding: 2px 0; /* 위아래 여백 최소화 */
+}
+
+.subcategory-box {
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 2px 5px; /* 최소화된 패딩 */
+  font-size: 12px;
+  color: #555;
+  width: 120px; /* 고정 너비 */
+  height: 30px; /* 고정 높이 */
+  display: flex;
+  align-items: center; /* 세로 중앙 정렬 */
+  justify-content: flex-start; /* 글자를 왼쪽 정렬 */
+  text-overflow: ellipsis; /* 넘칠 경우 '...' 처리 */
+  overflow: hidden; /* 넘치는 내용 숨김 */
+  white-space: nowrap; /* 텍스트를 한 줄로 고정 */
+  margin-right: 5px; /* 간격 최소화 */
+}
+
+.task-time {
+  font-size: 12px;
+  color: #888;
+  text-align: right;
+  flex-shrink: 0; /* 시간 박스는 최소 공간만 차지 */
+}
+
 .task-note {
   font-size: 12px;
   color: #555;
-  margin-top: 5px;
+  margin-top: 2px; /* 위아래 간격 최소화 */
+  overflow: hidden; /* 넘치는 텍스트 숨김 */
+  text-overflow: ellipsis; /* 넘칠 경우 '...' 처리 */
+  white-space: nowrap; /* 한 줄로 고정 */
+}
+
+.mydashboard-task-name-team {
+  display: flex;
+  justify-content: flex-end; /* 우측 정렬 */
+  font-size: 12px;
+  color: #555;
+  margin-bottom: 5px; /* 아래 요소와 간격 */
+}
+
+.mydashboard-task-name {
+  font-weight: bold;
+}
+
+.mydashboard-task-team {
+  color: #888; /* 팀 정보 색상 */
 }
 
 .task-footer {

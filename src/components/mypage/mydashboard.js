@@ -14,14 +14,33 @@ const Task = ({ task, moveTask, columnId }) => {
     item: { id: task.id, columnId },
   });
 
+  // Define custom display for remaining time based on column
+  const getRemainingTimeDisplay = () => {
+    if (columnId === 'column-2') return <span style={{ color: 'red' }}>지연</span>; // 지연됨 컬럼
+    if (columnId === 'column-4') return <span style={{ color: 'blue' }}>완료</span>; // 완료 컬럼
+    return `${task.remainingTime}`; // 기본 잔여 시간
+  };
+
   return (
     <div ref={ref} className={`kanban-task ${task.projectName.replace(' ', '-')}`}>
       <div className="task-header">
         <strong>{task.projectName}</strong>
         <span className="team-info">{task.category1}</span>
       </div>
-      <div className="task-content">{task.category2}</div>
-      <div className="task-footer">{task.spentTime} / {task.baseTime} h</div>
+      <div className="mydashboard-task-name-team">
+        <span className="mydashboard-task-name">{task.name}/{task.team}</span>
+      </div>
+      <div className="task-content">
+        <div className="task-row">
+          {task.subcategoriesName && (
+            <div className="subcategory-box">{task.subcategoriesName}</div>
+          )}
+          <div className="task-time">
+            {task.baseTime}/{task.spentTime}/{getRemainingTimeDisplay()}
+          </div>
+        </div>
+      </div>
+      <div className="task-note">{task.note}</div>
     </div>
   );
 };
@@ -118,7 +137,38 @@ const MyDashboard = () => {
           id: doc.id,
           ...doc.data(),
         }));
-        console.log('Fetched Tasks:', fetchedTasks);
+        console.log('Fetched Tasks:', fetchedTasks);       
+        
+        // 2. Extract unique Usersid
+      const uniqueUserIds = [...new Set(fetchedTasks.map((task) => task.Usersid).filter(Boolean))];
+
+      if (uniqueUserIds.length === 0) {
+        console.warn('No unique User IDs found.');
+        return;
+      }
+
+      const usersSnapshot = await db.collection('Users')
+        .where(firebase.firestore.FieldPath.documentId(), 'in', uniqueUserIds)
+        .get();
+
+      const usersData = {};
+      usersSnapshot.docs.forEach((doc) => {
+        usersData[doc.id] = doc.data();
+      });
+
+      console.log('Fetched Users:', usersData);
+
+      // 3. tasks와 Users 데이터를 매칭
+      const tasksWithUserDetails = fetchedTasks.map((task) => {
+        const userData = usersData[task.Usersid] || {}; // Usersid에 해당하는 사용자 데이터
+        return {
+          ...task,
+          name: userData.name || 'Unknown', // 기본값 'Unknown'
+          team: userData.team || 'Unknown', // 기본값 'Unknown'
+        };
+      });
+
+      console.log('Tasks with User Details:', tasksWithUserDetails);
   
         // 칸반보드 데이터 초기화
         const columns = {

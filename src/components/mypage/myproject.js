@@ -227,10 +227,10 @@ function MyProject() {
 
   return (
     <div className="my-project">
-      <div className="project-header">
+      <div className="myproject-project-header">
         <button onClick={addTask}>+ 작업 추가</button>
       </div>
-      <div className="task-table-header">
+      <div className="myproject-task-table-header">
         <div>작성일</div>
         <div>상태</div>
         <div>사업명</div>
@@ -242,14 +242,14 @@ function MyProject() {
         <div>잔여시간</div>
         <div>비고</div>
       </div>
-      <div className="task-sections">
+      <div className="myproject-task-sections">
         {['할일', '지연', '진행중', '완료'].map((status) => (
-          <div className="task-section" key={status}>
+          <div className="myproject-task-section" key={status}>
             <h3>▼ {status}</h3>
             {tasks
               .filter((task) => task.status === status)
               .map((task) => (
-                <div className={`task-row ${task.status}`} key={task.id}>
+                <div className={`myproject-task-row ${task.status}`} key={task.id}>
                   <div>{task.date}</div>
                   <div>
                     <select
@@ -257,7 +257,7 @@ function MyProject() {
                       onChange={(e) =>
                         updateTaskField(task.id, 'status', e.target.value)
                       }
-                      className={`status-select ${task.status}`}
+                      className={`myproject-status-select ${task.status}`}
                     >
                       <option value="할일">할일</option>
                       <option value="지연">지연</option>
@@ -273,7 +273,7 @@ function MyProject() {
                       updateTaskField(task.id, 'projectName', selectedOption.value)
                     }
                     placeholder="사업명"
-                    classNamePrefix="custom-select" // 접두사 지정
+                    classNamePrefix="myproject-custom-select" // 접두사 지정
                   />
                   </div>
                   <div>
@@ -282,7 +282,7 @@ function MyProject() {
                       onChange={(e) =>
                         updateTaskField(task.id, 'categoriesName', e.target.value)
                       }
-                      className="category-select"
+                      className="myproject-category-select"
                     >
                       <option value="">대분류</option>
                       {departmentData.categories.map((category) => (
@@ -302,7 +302,7 @@ function MyProject() {
                           e.target.value
                         )
                       }
-                      className="category-select 중분류"
+                      className="myproject-category-select 중분류"
                     >
                       <option value="">중분류</option>
                       {task.availableSubcategories.map((subcategory) => (
@@ -322,7 +322,7 @@ function MyProject() {
                           e.target.value
                         )
                       }
-                      className="category-select 소분류"
+                      className="myproject-category-select 소분류"
                     >
                       <option value="">소분류</option>
                       {task.availableSubSubcategories.map((subSubcategory) => (
@@ -386,7 +386,7 @@ function MyProject() {
                     />
                     <button
                       onClick={() => deleteTask(task.id)}
-                      className="delete-icon-button"
+                      className="myproject-delete-icon-button"
                     >
                       🗑️
                     </button>
