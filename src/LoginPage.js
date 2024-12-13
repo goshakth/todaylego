@@ -33,19 +33,25 @@ const LoginPage = () => {
         console.log('Only members of the SAS community may access this page. Please log in with sas.edu.sg account!');
         setErrorMsg('Only members of the SAS community may access this page. Please log in with sas.edu.sg account');
       } else {
-        const userDocRef = firebase.firestore().collection("Users").doc(email_handle);
+        //const userDocRef = firebase.firestore().collection("Users").doc(email_handle);
+        const userDocRef = firebase.firestore().collection("Users").doc(uid); // UID를 문서 ID로 사용
+
         const userDocSnapshot = await userDocRef.get();
 
         if (!userDocSnapshot.exists) {
           await userDocRef.set({
             email: email,
             isSuperUser: false,
-            Usersid: uid, // Firebase UID를 Users 컬렉션에 추가
+            currentUserId: uid, // Firebase UID를 Users 컬렉션에 추가
+            UserName:'',
+            UserTeam:'',            
           });
         }else {
           // 기존 사용자 문서 업데이트 (필요한 경우)
           await userDocRef.update({
-            Usersid: uid, // UID가 이미 있더라도 항상 업데이트 가능
+            currentUserId: uid, // UID가 이미 있더라도 항상 업데이트 가능
+            UserName:'',
+            UserTeam:'',
           });
         }
         

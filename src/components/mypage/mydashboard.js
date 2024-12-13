@@ -26,9 +26,7 @@ const Task = ({ task, moveTask, columnId }) => {
       <div className="task-header">
         <strong>{task.projectName}</strong>
         <span className="team-info">{task.category1}</span>
-      </div>
-      <div className="mydashboard-task-name-team">
-        <span className="mydashboard-task-name">{task.name}/{task.team}</span>
+        <span className="mydashboard-task-name">{task.userName}/{task.userTeam}</span>
       </div>
       <div className="task-content">
         <div className="task-row">
@@ -138,38 +136,7 @@ const MyDashboard = () => {
           ...doc.data(),
         }));
         console.log('Fetched Tasks:', fetchedTasks);       
-        
-        // 2. Extract unique Usersid
-      const uniqueUserIds = [...new Set(fetchedTasks.map((task) => task.Usersid).filter(Boolean))];
-
-      if (uniqueUserIds.length === 0) {
-        console.warn('No unique User IDs found.');
-        return;
-      }
-
-      const usersSnapshot = await db.collection('Users')
-        .where(firebase.firestore.FieldPath.documentId(), 'in', uniqueUserIds)
-        .get();
-
-      const usersData = {};
-      usersSnapshot.docs.forEach((doc) => {
-        usersData[doc.id] = doc.data();
-      });
-
-      console.log('Fetched Users:', usersData);
-
-      // 3. tasks와 Users 데이터를 매칭
-      const tasksWithUserDetails = fetchedTasks.map((task) => {
-        const userData = usersData[task.Usersid] || {}; // Usersid에 해당하는 사용자 데이터
-        return {
-          ...task,
-          name: userData.name || 'Unknown', // 기본값 'Unknown'
-          team: userData.team || 'Unknown', // 기본값 'Unknown'
-        };
-      });
-
-      console.log('Tasks with User Details:', tasksWithUserDetails);
-  
+     
         // 칸반보드 데이터 초기화
         const columns = {
           'column-1': { ...kanbanData.columns['column-1'], taskIds: [] },

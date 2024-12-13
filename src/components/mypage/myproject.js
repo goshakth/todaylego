@@ -8,8 +8,9 @@ function MyProject() {
   const [tasks, setTasks] = useState([]);
   const [projects, setProjects] = useState([]);
   const [departmentData, setDepartmentData] = useState({ categories: [] });
-  //const [departmentData, setDepartmentData] = useState(null);
   const [currentUserId, setCurrentUserId] = useState(null);
+  const [userData, setUserData] = useState(null); // 사용자 정보 저장
+
 
   useEffect(() => {
     const user = firebase.auth().currentUser;
@@ -17,6 +18,23 @@ function MyProject() {
       setCurrentUserId(user.uid);
     }
   }, []);
+
+  // 현재 사용자 정보 가져오기
+  useEffect(() => {
+    if (currentUserId) {
+      db.collection('Users')
+        .doc(currentUserId)
+        .get()
+        .then((doc) => {
+          if (doc.exists) {
+            setUserData(doc.data());
+          } else {
+            console.error('사용자 정보를 찾을 수 없습니다.');
+          }
+        })
+        .catch((error) => console.error('Error fetching user data:', error));
+    }
+  }, [currentUserId]);
 
   useEffect(() => {
     if (currentUserId) {
@@ -42,6 +60,8 @@ function MyProject() {
               availableSubSubcategories: subcategory
                 ? subcategory.subsubcategories
                 : [],
+              userName: userData.userName || '알 수 없음', // 사용자 이름 추가
+              userTeam: userData.userTeam || '알 수 없음', // 사용자 팀 추가
             };
           });
           setTasks(fetchedTasks); // 상태 업데이트
@@ -198,6 +218,8 @@ function MyProject() {
       remainingTime: 0,
       note: '',
       Usersid: currentUserId,
+      userName: userData.userName, // 사용자 이름 추가
+      userTeam: userData.userTeam, // 사용자 팀 추가
       availableSubcategories: [],
       availableSubSubcategories: [],
     };
