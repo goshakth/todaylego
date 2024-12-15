@@ -191,7 +191,7 @@ const Admindash = () => {
                   <div key={task.id} className="admindash-kanban-task">
                     <div className="task-header">
                       <strong>{task.projectName}</strong>
-                      <span className="team-info">{task.team}</span>
+                      <span className="team-info">{task.userName}/{task.userTeam}</span>
                     </div>
                     <div className="task-content">
                       <div className="task-row">

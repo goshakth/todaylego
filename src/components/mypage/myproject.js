@@ -60,8 +60,8 @@ function MyProject() {
               availableSubSubcategories: subcategory
                 ? subcategory.subsubcategories
                 : [],
-              userName: userData.userName || '알 수 없음', // 사용자 이름 추가
-              userTeam: userData.userTeam || '알 수 없음', // 사용자 팀 추가
+              userName: userData.UserName || '알 수 없음', // 사용자 이름 추가
+              userTeam: userData.UserTeam || '알 수 없음', // 사용자 팀 추가
             };
           });
           setTasks(fetchedTasks); // 상태 업데이트
@@ -168,7 +168,7 @@ function MyProject() {
                   // 상태 변경 로직
                   if (remainingTime < 0) return '지연'; // 잔여 시간이 음수일 경우 '지연'
                   if (task.status === '완료') return '완료'; // 상태가 이미 '완료'일 경우 유지
-                  if (task.status === '진행중' || spentTime > 0) return '진행중'; // 소요 시간이 0보다 크거나 상태가 '진행중'일 경우 유지
+                  if (task.status === '진행중') return '진행중'; // 소요 시간이 0보다 크거나 상태가 '진행중'일 경우 유지
                   return '할일'; // 기본 상태
                 })(),
               }), 
@@ -218,8 +218,8 @@ function MyProject() {
       remainingTime: 0,
       note: '',
       Usersid: currentUserId,
-      userName: userData.userName, // 사용자 이름 추가
-      userTeam: userData.userTeam, // 사용자 팀 추가
+      userName: userData.UserName, // 사용자 이름 추가
+      userTeam: userData.UserTeam, // 사용자 팀 추가
       availableSubcategories: [],
       availableSubSubcategories: [],
     };

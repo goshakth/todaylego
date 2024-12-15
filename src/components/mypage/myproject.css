@@ -4,7 +4,7 @@
   margin-left: 250px;
   padding-top: 70px;
   overflow-y: auto;
-  height: calc(100vh - 70px);
+  height: 100vh;
 }
 
 .myproject-project-header {
@@ -197,9 +197,41 @@
   justify-content: space-between;
 }
 
+.myproject-custom-select__control {
+  display: flex !important;
+  align-items: center !important;
+  min-height: 35px !important;
+  font-size: 14px !important;
+  border-radius: 4px !important;
+  background-color: #fff !important;
+  transition: border-color 0.2s ease-in-out !important;
+}
+
+.myproject-custom-select__control:hover {
+  border-color: #888 !important;
+}
+
+.myproject-custom-select__control--is-focused {
+  border-color: #1a73e8 !important;
+  box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.3) !important;
+}
+
+/* 플레이스홀더 스타일 */
+.myproject-custom-select__placeholder {
+  color: #888;
+  font-size: 14px;
+}
+
+/* 선택된 값 스타일 */
+.myproject-custom-select__single-value {
+  color: #333;
+  font-weight: bold;
+}
+
 /* 드롭다운 메뉴 스타일 */
 .myproject-custom-select__menu {
-  display: block ; /* 한 줄에 하나씩 배치 */
+  display: flex;
+  flex-direction: column; /* 세로 방향으로 나열 */
   width: 100%; /* 부모 요소 크기에 맞춤 */
   z-index: 10; /* 겹침 방지 */
   background-color: #fff; /* 배경색 */
@@ -210,53 +242,24 @@
 
 /* 드롭다운 옵션 스타일 */
 .myproject-custom-select__option {
-  display: block ; /* 한 줄에 하나씩 배치 */
+  display: flex; /* 각 옵션을 flex로 */
+  flex-direction: row; /* 텍스트와 아이콘 등은 기본 row로 */
+  justify-content: flex-start; /* 왼쪽 정렬 */
+  align-items: center; /* 세로 중앙 정렬 */
+  padding: 10px; /* 옵션 간 간격 추가 */
   font-size: 14px; /* 폰트 크기 */
   color: #333; /* 텍스트 색상 */
-  border: none;
-  background-color: #fff; /* 기본 배경색 */
   cursor: pointer; /* 마우스 포인터 */
   transition: background-color 0.2s ease-in-out; /* 배경색 변경 효과 */
 }
 
+/* Hover 상태 스타일 */
 .myproject-custom-select__option:hover {
   background-color: #f2f2f2; /* Hover 배경색 */
 }
 
+/* 선택된 옵션 스타일 */
 .myproject-custom-select__option--is-selected {
   background-color: #cbdbfc; /* 선택된 옵션 배경색 */
   color: #3a6db6; /* 선택된 옵션 텍스트 색상 */
-}
-
-/* 선택된 값 스타일 */
-.myproject-custom-select__single-value {
-  font-size: 14px; /* 폰트 크기 */
-  color: #333; /* 텍스트 색상 */
-}
-
-/* 컨트롤 (선택 박스) 스타일 */
-.myproject-custom-select__control {
-  display: block ; /* 한 줄에 하나씩 배치 */
-  min-height: 35px; /* 높이 */
-  font-size: 14px; /* 폰트 크기 */
-  border-radius: 4px; /* 모서리 둥글기 */
-  background-color: #fff;  /* 배경색 */
-  display: flex;
-  align-items: center; /* 텍스트 가운데 정렬 */
-  transition: border-color 0.2s ease-in-out; /* 테두리 색상 변경 효과 */
-}
-
-.myproject-custom-select__control:hover {
-  border-color: #888; /* Hover 시 테두리 색상 */
-}
-
-.myproject-custom-select__control--is-focused {
-  border-color: #1a73e8; /* 포커스된 테두리 색상 */
-  box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.3); /* 포커스 아웃라인 */
-}
-
-/* 플레이스홀더 스타일 */
-.myproject-custom-select__placeholder {
-  font-size: 14px; /* 폰트 크기 */
-  color: #888; /* 플레이스홀더 색상 */
 }
