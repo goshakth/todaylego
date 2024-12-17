@@ -44,14 +44,13 @@ const LoginPage = () => {
             isSuperUser: false,
             currentUserId: uid, // Firebase UID를 Users 컬렉션에 추가
             UserName:'',
-            UserTeam:'',            
+            UserTeam:'',         
+            isRole: '',
           });
         }else {
           // 기존 사용자 문서 업데이트 (필요한 경우)
           await userDocRef.update({
             currentUserId: uid, // UID가 이미 있더라도 항상 업데이트 가능
-            UserName:'',
-            UserTeam:'',
           });
         }
         

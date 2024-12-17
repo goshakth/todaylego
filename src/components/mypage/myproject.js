@@ -72,8 +72,26 @@ function MyProject() {
   
   
   useEffect(() => {
-    db.collection('departments')
-      .doc('business')
+    if(userData && userData.isRole ){
+      let documentName = '';
+
+      switch(userData.isRole){
+        case '1':
+          documentName = 'business';
+          break;
+        case '2':
+          documentName = 'Management';
+          break;
+        case '3':
+          documentName = 'Design';
+          break;
+
+        default:
+          console.error('잘못된 사용자 역할입니다.',userData.isRole);
+          return; 
+      }
+      db.collection('departments')
+      .doc(documentName)
       .get()
       .then((doc) => {
         if (doc.exists) {
@@ -83,7 +101,9 @@ function MyProject() {
         }
       })
       .catch((error) => console.error('Error fetching department data:', error));
-  }, []);
+      
+    }
+  }, [userData]);
 
   useEffect(() => {
     db.collection('projects')
