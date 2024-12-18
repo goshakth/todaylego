@@ -164,14 +164,14 @@ const MyDashboard = () => {
         const weeklyTimeMap = [0, 0, 0, 0];
   
         fetchedTasks.forEach((task) => {
-          const spentTime = parseFloat(task.spentTime) || 0; // 문자열을 숫자로 변환하고, 기본값은 0
+          const spentTime = parseFloat(task.spentTime) || 0;
           const projectName = task.projectName || '기타';
           const taskDate = new Date(task.date);
         
           // 프로젝트별 집계
           projectTimeMap[projectName] = (projectTimeMap[projectName] || 0) + spentTime;
         
-          // 주별 집계
+          // 주별 집계를 프로젝트별로 구분
           const weekIndex = Math.floor((taskDate.getDate() - 1) / 7);
           if (!projectWeeklyData[projectName]) {
             projectWeeklyData[projectName] = [0, 0, 0, 0];
@@ -192,30 +192,19 @@ const MyDashboard = () => {
         console.log('Project Weekly Data:', projectWeeklyData);
 
 
-        const weeklyChartSeries = Object.keys(projectWeeklyData).map((projectName) => ({
+        // 주간 차트 시리즈 데이터 생성
+        const weeklyChartSeries = Object.keys(projectWeeklyData).map(projectName => ({
           name: projectName,
-          data: projectWeeklyData[projectName],
+          data: projectWeeklyData[projectName]
         }));
 
-        console.log('Weekly Chart Series:', weeklyChartSeries);
-  
-        if (Object.keys(projectTimeMap).length === 0) {
-          console.warn('No project data available.');
-        } else {
-          console.log('Updating chartData with:', {
-            projectSeries: Object.values(projectTimeMap),
-            projectLabels: Object.keys(projectTimeMap),
-            weeklySeries: [{ name: '시간', data: weeklyTimeMap }],
-            weeklyLabels: ['1주차', '2주차', '3주차', '4주차'],
-          });
-        
-          setChartData({
-            projectSeries: Object.values(projectTimeMap),
-            projectLabels: Object.keys(projectTimeMap),
-            weeklySeries: [{ name: '시간', data: weeklyTimeMap }],
-            weeklyLabels: ['1주차', '2주차', '3주차', '4주차'],
-          });
-        }
+        setChartData({
+          projectSeries: Object.values(projectTimeMap),
+          projectLabels: Object.keys(projectTimeMap),
+          weeklySeries: weeklyChartSeries,
+          weeklyLabels: ['1주차', '2주차', '3주차', '4주차'],
+        });
+
       } catch (error) {
         console.error('Error fetching tasks:', error);
       }
@@ -305,39 +294,45 @@ const MyDashboard = () => {
     chart: {
       type: 'bar',
       stacked: true,
-      height: 350,
+      height: 350
     },
     plotOptions: {
       bar: {
         horizontal: false,
         borderRadius: 4,
-      },
+        columnWidth: '50%'
+      }
     },
     dataLabels: {
       enabled: true,
-      formatter: function (val, opts) {
-        const total = opts.w.globals.stackedSeriesTotals[opts.dataPointIndex];
-        return opts.seriesIndex === opts.w.globals.series.length - 1 ? `${total} h` : '';
-      },
-      offsetY: -10,
-      style: {
-        colors: ['#000'],
-      },
+      total: {
+        enabled: true,
+        style: {
+          fontSize: '13px',
+          fontWeight: 900
+        }
+      }
     },
     xaxis: {
-      categories: chartData.weeklyLabels,
+      categories: chartData.weeklyLabels
     },
     yaxis: {
       title: {
-        text: '시간',
-      },
+        text: '시간'
+      }
     },
     legend: {
       position: 'top',
+      horizontalAlign: 'left'
     },
     fill: {
-      opacity: 1,
+      opacity: 1
     },
+    tooltip: {
+      y: {
+        formatter: (val) => `${val} h`
+      }
+    }
   };
 
 

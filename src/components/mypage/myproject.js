@@ -50,8 +50,14 @@ function MyProject() {
 
   useEffect(() => {
     if (currentUserId) {
-      const startOfMonth = new Date(filters.year, filters.month - 1, 1).toISOString();
-      const endOfMonth = new Date(filters.year, filters.month, 0).toISOString();
+      // 시작일과 종료일을 YYYY-MM-DD 형식으로 변환
+      const startOfMonth = new Date(filters.year, filters.month - 1, 1)
+        .toISOString()
+        .split('T')[0];
+      const endOfMonth = new Date(filters.year, filters.month, 0)
+        .toISOString()
+        .split('T')[0];
+
       db.collection('tasks')
         .where('Usersid', '==', currentUserId)
         .where('date', '>=', startOfMonth)
@@ -84,7 +90,7 @@ function MyProject() {
         })
         .catch((error) => console.error('Error fetching tasks:', error));
     }
-  }, [currentUserId, departmentData, filters]);
+  }, [currentUserId, departmentData, filters, userData]);
   
   
   useEffect(() => {
@@ -175,7 +181,7 @@ function MyProject() {
         .update(updateData)
         .then(() => console.log(`Task ${taskId} updated`))
         .catch((error) => console.error('Error updating task:', error));
-    }, 500) // 1초 후에만 실행
+    }, 500) // 0.5초 후에만 실행
     );
 
     const handleFilterChange = (field, value) => {
