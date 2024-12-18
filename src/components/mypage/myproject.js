@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useRef,useState, useEffect } from 'react';
 import Select from 'react-select';
 import { db } from '../../firebase'; // Firestore 인스턴스 가져오기
 import firebase from 'firebase/app';
+import { debounce } from 'lodash'; // lodash 라이브러리 활용 241217
+import Calendar from 'react-calendar'; // react-calendar import
+import 'react-calendar/dist/Calendar.css'; // react-calendar css import
 import './myproject.css';
 
 function MyProject() {
@@ -11,6 +14,15 @@ function MyProject() {
   const [currentUserId, setCurrentUserId] = useState(null);
   const [userData, setUserData] = useState(null); // 사용자 정보 저장
 
+  const [filters, setFilters] = useState({
+    year: new Date().getFullYear(),
+    month: new Date().getMonth() + 1,
+  });
+
+  // Calendar 상태
+  const [selectedTaskId, setSelectedTaskId] = useState(null);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [calendarPosition, setCalendarPosition] = useState({ top: 0, left: 0 });
 
   useEffect(() => {
     const user = firebase.auth().currentUser;
@@ -38,8 +50,12 @@ function MyProject() {
 
   useEffect(() => {
     if (currentUserId) {
+      const startOfMonth = new Date(filters.year, filters.month - 1, 1).toISOString();
+      const endOfMonth = new Date(filters.year, filters.month, 0).toISOString();
       db.collection('tasks')
         .where('Usersid', '==', currentUserId)
+        .where('date', '>=', startOfMonth)
+        .where('date', '<=', endOfMonth)
         .get()
         .then((snapshot) => {
           const fetchedTasks = snapshot.docs.map((doc) => {
@@ -68,7 +84,7 @@ function MyProject() {
         })
         .catch((error) => console.error('Error fetching tasks:', error));
     }
-  }, [currentUserId, departmentData]);
+  }, [currentUserId, departmentData, filters]);
   
   
   useEffect(() => {
@@ -151,74 +167,115 @@ function MyProject() {
       });
     }, [tasks]);
 
-  const updateTaskField = (taskId, field, value) => {
-    setTasks((prevTasks) =>
-      prevTasks.map((task) =>
-        task.id === taskId
-          ? {
-              ...task,
-              [field]: value,
-              ...(field === 'categoriesName' && {
-                subcategoriesName: task.categoriesName === value ? task.subcategoriesName : '',
-                subsubcategoriesName: task.categoriesName === value ? task.subsubcategoriesName : '',
-                availableSubcategories:
-                  departmentData.categories.find(
-                    (category) => category.name === value
-                  ).subcategories || [],
-                availableSubSubcategories: [],
-              }),
-              ...(field === 'subcategoriesName' && {
-                subsubcategoriesName: task.subcategoriesName === value ? task.subsubcategoriesName : '',
-                availableSubSubcategories:
-                  task.availableSubcategories.find(
-                    (subcategory) => subcategory.name === value
-                  ).subsubcategories || [],
-              }),
-              ...(field === 'spentTime' && {
-                remainingTime: (() => {
-                  const baseTime = task.baseTime || 0; // 기준 시간
-                  const spentTime = Math.max(0, parseFloat(value)) || 0; // 소요 시간
-                  return baseTime - spentTime;
-                })(),
-                status: (() => {
-                  const baseTime = task.baseTime || 0;
-                  const spentTime = Math.max(0, parseFloat(value)) || 0;
-                  const remainingTime = baseTime - spentTime;
-  
-                  // 상태 변경 로직
-                  if (remainingTime < 0) return '지연'; // 잔여 시간이 음수일 경우 '지연'
-                  if (task.status === '완료') return '완료'; // 상태가 이미 '완료'일 경우 유지
-                  if (task.status === '진행중') return '진행중'; // 소요 시간이 0보다 크거나 상태가 '진행중'일 경우 유지
-                  return '할일'; // 기본 상태
-                })(),
-              }), 
-            }
-          : task
-      )
+    // Debounced 함수는 컴포넌트가 마운트될 때 단 한 번만 생성됨
+    const debouncedUpdateRef = useRef(
+    debounce((taskId, updateData) => {
+      db.collection('tasks')
+        .doc(taskId)
+        .update(updateData)
+        .then(() => console.log(`Task ${taskId} updated`))
+        .catch((error) => console.error('Error updating task:', error));
+    }, 500) // 1초 후에만 실행
     );
-    
-     // Firestore 업데이트
-  const currentTask = tasks.find((task) => task.id === taskId);
-  const baseTime = currentTask.baseTime || 0; // 기준 시간
-  const spentTime =
-    field === 'spentTime' ? Math.max(0, parseFloat(value)) || 0 : currentTask.spentTime || 0; // 소요 시간
-  const remainingTime = baseTime - spentTime;
 
-  const updateData = {
-    [field]: value,
-    ...(field === 'spentTime' && {
-      remainingTime,
-      status: remainingTime < 0 ? '지연' : currentTask.status === '완료' ? '완료' : '할일',
-    }),
-  };
- 
-    db.collection('tasks')
-      .doc(taskId)
-      .update(updateData)
-      .then(() => console.log(`Task ${taskId} updated: ${field} = ${value}`))
-      .catch((error) => console.error('Error updating task:', error));
-  };
-  
+    const handleFilterChange = (field, value) => {
+      setFilters((prev) => ({ ...prev, [field]: value }));
+    };
+
+    const updateTaskField = (taskId, field, value) => {
+      const currentTask = tasks.find((task) => task.id === taskId);
+    
+      // 상태를 '지연'으로 변경할 때, note(사유)가 반드시 필요
+      if (field === 'status' && value === '지연' && !currentTask.note.trim()) {
+        alert('사유를 입력해야 상태를 "지연"으로 변경할 수 있습니다.');
+        return;
+      }
+    
+      // '지연' 상태에서 다른 상태로 변경하려고 할 때 note(사유)가 필요
+      if (currentTask.status === '지연' && field === 'status' && value !== '지연') {
+        if (!currentTask.note.trim()) {
+          alert('사유를 입력해야 "지연" 상태에서 다른 상태로 변경할 수 있습니다.');
+          return;
+        }
+      }
+    
+      // '지연' 상태일 때 다른 필드를 수정할 때 note(사유)가 반드시 필요
+      if (currentTask.status === '지연' && field !== 'note' && !currentTask.note.trim()) {
+        alert('사유를 입력해야 다른 필드를 수정할 수 있습니다.');
+        return;
+      }
+    
+      setTasks((prevTasks) =>
+        prevTasks.map((task) =>
+          task.id === taskId
+            ? {
+                ...task,
+                [field]: value,
+                ...(field === 'categoriesName' && {
+                  subcategoriesName: '',
+                  subsubcategoriesName: '',
+                  availableSubcategories:
+                    departmentData.categories.find((category) => category.name === value)
+                      .subcategories || [],
+                  availableSubSubcategories: [],
+                }),
+                ...(field === 'subcategoriesName' && {
+                  subsubcategoriesName: '',
+                  availableSubSubcategories:
+                    currentTask.availableSubcategories.find(
+                      (subcategory) => subcategory.name === value
+                    ).subsubcategories || [],
+                }),
+                ...(field === 'spentTime' && {
+                  remainingTime: (() => {
+                    const baseTime = currentTask.baseTime || 0;
+                    const spentTime = Math.max(0, parseFloat(value)) || 0;
+                    return baseTime - spentTime;
+                  })(),
+                  status: (() => {
+                    const baseTime = currentTask.baseTime || 0;
+                    const spentTime = Math.max(0, parseFloat(value)) || 0;
+                    const remainingTime = baseTime - spentTime;
+    
+                    if (remainingTime < 0) return '지연';
+                    if (task.status === '완료') return '완료';
+                    return '할일';
+                  })(),
+                }),
+              }
+            : task
+        )
+      );
+    
+      // Firestore 업데이트 (note 필드만 디바운스 적용)
+      if (field === 'note') {
+        debouncedUpdateRef.current(taskId, { [field]: value });
+      } else {
+        const baseTime = currentTask.baseTime || 0;
+        const spentTime =
+          field === 'spentTime' ? Math.max(0, parseFloat(value)) || 0 : currentTask.spentTime || 0;
+        const remainingTime = baseTime - spentTime;
+    
+        const updateData = {
+          [field]: value,
+          ...(field === 'spentTime' && {
+            remainingTime,
+            status:
+              remainingTime < 0
+                ? '지연'
+                : currentTask.status === '완료'
+                ? '완료'
+                : '진행중',
+          }),
+        };
+    
+        db.collection('tasks')
+          .doc(taskId)
+          .update(updateData)
+          .then(() => console.log(`Task ${taskId} updated: ${field} = ${value}`))
+          .catch((error) => console.error('Error updating task:', error));
+      }
+    };  
 
   const addTask = () => {
     if (!currentUserId) {
@@ -226,8 +283,10 @@ function MyProject() {
       return;
     }
 
+    const today = new Date().toISOString().split('T')[0];
+
     const newTask = {
-      date: new Date().toISOString().split('T')[0],
+      date: today,  // 현재 날짜로 설정
       status: '할일',
       projectName: '',
       categoriesName: '',
@@ -238,8 +297,8 @@ function MyProject() {
       remainingTime: 0,
       note: '',
       Usersid: currentUserId,
-      userName: userData.UserName, // 사용자 이름 추가
-      userTeam: userData.UserTeam, // 사용자 팀 추가
+      userName: userData.UserName,
+      userTeam: userData.UserTeam,
       availableSubcategories: [],
       availableSubSubcategories: [],
     };
@@ -254,6 +313,7 @@ function MyProject() {
         console.log('Task added:', docRef.id);
       })
       .catch((error) => console.error('Error adding task:', error));
+      
   };
 
   const deleteTask = (taskId) => {
@@ -267,10 +327,69 @@ function MyProject() {
       .catch((error) => console.error('Error deleting task:', error));
   };
 
+  // Calendar 관련 함수들 추가
+  const handleDateClick = (taskId, event) => {
+    event.stopPropagation(); // 이벤트 버블링 방지
+    setSelectedTaskId(taskId);
+    setIsCalendarOpen(true);
+    
+    const rect = event.target.getBoundingClientRect();
+    setCalendarPosition({
+      top: rect.bottom + window.scrollY,
+      left: rect.left + window.scrollX
+    });
+  };
+
+  const handleDateChange = (date) => {
+    if (selectedTaskId) {
+      const formattedDate = date.toISOString().split('T')[0];
+      updateTaskField(selectedTaskId, 'date', formattedDate);
+      setIsCalendarOpen(false);
+    }
+  };
+
+  // useEffect 추가
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // calendar-container 클래스를 가진 요소를 찾습니다
+      const calendarContainer = document.querySelector('.calendar-container');
+      
+      // 클릭된 요소가 캘린더 컨테이너 밖에 있고, 캘린더가 열려있는 경우
+      if (calendarContainer && !calendarContainer.contains(event.target) && 
+          !event.target.closest('.myproject-task-row div:first-child')) {
+        setIsCalendarOpen(false);
+      }
+    };
+
+    // 이벤트 리스너 추가
+    document.addEventListener('mousedown', handleClickOutside);
+
+    // 컴포넌트가 언마운트될 때 이벤트 리스너 제거
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   return (
     <div className="my-project">
       <div className="myproject-project-header">
         <button onClick={addTask}>+ 작업 추가</button>
+        <div className="my-project-filters">
+        <select value={filters.year} onChange={(e) => handleFilterChange('year', parseInt(e.target.value))}>
+          {[2023, 2024, 2025].map((year) => (
+            <option key={year} value={year}>
+              {year}년
+            </option>
+          ))}
+        </select>
+        <select value={filters.month} onChange={(e) => handleFilterChange('month', parseInt(e.target.value))}>
+          {[...Array(12).keys()].map((month) => (
+            <option key={month + 1} value={month + 1}>
+              {month + 1}월
+            </option>
+          ))}
+        </select>
+      </div>
       </div>
       <div className="myproject-task-table-header">
         <div>작성일</div>
@@ -292,7 +411,14 @@ function MyProject() {
               .filter((task) => task.status === status)
               .map((task) => (
                 <div className={`myproject-task-row ${task.status}`} key={task.id}>
-                  <div>{task.date}</div>
+                 <div
+                  onClick={(e) => {
+                    console.log('Date clicked for task:', task.id);
+                    handleDateClick(task.id, e);
+                  }}
+                >
+                  {task.date}
+                </div>
                   <div>
                     <select
                       value={task.status}
@@ -438,6 +564,19 @@ function MyProject() {
           </div>
         ))}
       </div>
+      {isCalendarOpen && (
+        <div
+          className="calendar-container"
+          style={{
+            position: 'absolute',
+            top: calendarPosition.top,
+            left: calendarPosition.left,
+            zIndex: 800,
+          }}
+        >
+          <Calendar onChange={handleDateChange} />
+        </div>
+      )}
     </div>
   );
 }

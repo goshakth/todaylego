@@ -9,19 +9,44 @@
 
 .myproject-project-header {
   display: flex;
-  justify-content: flex-start;
+  justify-content: space-between;
   margin-bottom: 20px;
 }
 
-.project-header button {
-  padding: 0px;
-  width: 100px;
-  height: 30px;
-  background-color: white;
-  color: black;
-  border: 1px solid black;
+.myproject-project-header button {
+  padding: 5px 25px;
+  border: 1px solid #ccc;
+  align-items: flex-end;
+  font-weight: bold;
   border-radius: 4px;
+  background-color: #dddddd;
+  font-size: 14px;
   cursor: pointer;
+}
+
+.my-project-filters {
+  display: flex;
+  justify-content: flex-end;
+  font-weight: bold;
+  margin-bottom: 20px;
+  gap: 10px;
+}
+
+.my-project-filters select {
+  padding: 5px 25px;
+  border: 1px solid #ccc;
+  align-items: flex-end;
+  font-weight: bold;
+  border-radius: 4px;
+  background-color: #dddddd;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.my-project-filters select:focus {
+  outline: none;
+  border-color: #007bff;
+  background-color: #dddddd;
 }
 
 .myproject-task-table-header,
@@ -269,4 +294,80 @@
 .myproject-custom-select__option--is-selected {
   background-color: #cbdbfc; /* 선택된 옵션 배경색 */
   color: #3a6db6; /* 선택된 옵션 텍스트 색상 */
+}
+
+/* Calendar 스타일 */
+.calendar-container {
+  background: white;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+}
+
+.react-calendar {
+  width: 350px;
+  max-width: 100%;
+  background: white;
+  border: 1px solid #a0a096;
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.125em;
+}
+
+/* 네비게이션 스타일 */
+.react-calendar__navigation {
+  width: 100%;
+  height: 3.5rem;
+  display: flex;
+  justify-content: space-between; /* 버튼 정렬 */
+  text-align: center;
+  align-items: center;
+  padding: 0 1rem; /* 좌우 간격 조정 */
+}
+
+.react-calendar__navigation__label {
+  font-size: 16px;
+  font-weight: bold;
+  background-color: white;
+  border: none;
+}
+
+.react-calendar__navigation__prev-button,
+.react-calendar__navigation__next-button {
+  border: none;
+  background-color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #333; /* 버튼 색상 */
+  opacity: 1; /* 버튼 보이게 수정 */
+}
+
+/* 날짜 스타일 */
+.react-calendar__tile {
+  text-align: center;
+  padding: 10px;
+  background-color: white;
+  border: none;
+  font-size: 14px;
+}
+
+.react-calendar__month-view__days__day--weekend {
+  color: red; /* 일요일 색상 */
+}
+
+.react-calendar__month-view__days__day:nth-child(7n-1) {
+  color: blue; /* 토요일 색상 */
+}
+
+/* Hover 및 Active 스타일 */
+.react-calendar__tile:enabled:hover,
+.react-calendar__tile:enabled:focus {
+  background-color: #f0f8ff;
+  border-radius: 50%;
+}
+
+.react-calendar__tile--active {
+  background-color: #b3d7ff;
+  color: white;
+  border-radius: 50%;
 }
