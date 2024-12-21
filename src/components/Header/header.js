@@ -23,7 +23,7 @@ function Header() {
     return (
       <nav className="fixed-top pt-0">
         <div className="navAlign">
-          <a href="/" role="button">
+          <a href="/dashboard" role="button">
             <img className="logo" src="/sha_logo.png" alt="sha logo" />
           </a>
 

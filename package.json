@@ -22,7 +22,6 @@
     "react-beautiful-dnd": "^13.1.1",
     "react-calendar": "^5.1.0",
     "react-chartjs-2": "^5.2.0",
-    "react-datepicker": "^7.5.0",
     "react-dnd": "^16.0.1",
     "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^18.2.0",
@@ -36,8 +35,8 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "start": "export SET NODE_OPTIONS=--openssl-legacy-provider && react-scripts start",
+    "build": "export SET NODE_OPTIONS=--openssl-legacy-provider && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -78,5 +77,5 @@
   "bugs": {
     "url": "https://github.com/gyulimjessKang/clubsmate/issues"
   },
-  "homepage": "https://github.com/gyulimjessKang/clubsmate#readme"
+  "homepage": "/"
 }

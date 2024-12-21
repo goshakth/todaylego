@@ -24,6 +24,17 @@ function MyProject() {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [calendarPosition, setCalendarPosition] = useState({ top: 0, left: 0 });
 
+  // 부서 목록 상태 추가
+  const [dep] = useState([
+    { id: 'business', name: '사업부서' },
+    { id: 'Management', name: '경영부서' },
+    { id: 'Design', name: '디자인부서' }
+  ]);
+  const [selectedDepartment, setSelectedDepartment] = useState('');
+
+  // 작업 추가 시 부서 선택을 위한 상태
+  const [isAddingTask, setIsAddingTask] = useState(false);
+
   useEffect(() => {
     const user = firebase.auth().currentUser;
     if (user) {
@@ -74,7 +85,7 @@ function MyProject() {
                   (sub) => sub.name === taskData.subcategoriesName
                 )
               : null;
-  
+
             return {
               id: doc.id,
               ...taskData,
@@ -82,11 +93,11 @@ function MyProject() {
               availableSubSubcategories: subcategory
                 ? subcategory.subsubcategories
                 : [],
-              userName: userData.UserName || '알 수 없음', // 사용자 이름 추가
-              userTeam: userData.UserTeam || '알 수 없음', // 사용자 팀 추가
+              userName: userData.UserName || '알 수 없음',
+              userTeam: userData.UserTeam || '알 수 없음',
             };
           });
-          setTasks(fetchedTasks); // 상태 업데이트
+          setTasks(fetchedTasks);
         })
         .catch((error) => console.error('Error fetching tasks:', error));
     }
@@ -191,6 +202,141 @@ function MyProject() {
     const updateTaskField = (taskId, field, value) => {
       const currentTask = tasks.find((task) => task.id === taskId);
     
+      // 카테고리 변경 관련 로직
+      if (field === 'categoriesName') {
+        // 이미 하위 카테고리가 선택되어 있는 경우
+        if (currentTask.subcategoriesName || currentTask.subsubcategoriesName) {
+          if (window.confirm('대분류를 변경하면 선택된 중분류와 소분류가 초기화됩니다. 계속하시겠습니까?')) {
+            const selectedCategory = departmentData.categories.find(
+              (category) => category.name === value
+            );
+
+            const updatedTask = {
+              categoriesName: value,
+              subcategoriesName: '',
+              subsubcategoriesName: '',
+              availableSubcategories: selectedCategory.subcategories || [],
+              availableSubSubcategories: [],
+              baseTime: 0 // 기준시간도 초기화
+            };
+
+            // 먼저 Firestore 업데이트
+            db.collection('tasks')
+              .doc(taskId)
+              .update(updatedTask)
+              .then(() => {
+                // Firestore 업데이트 성공 후 로컬 상태 업데이트
+                setTasks((prevTasks) =>
+                  prevTasks.map((task) =>
+                    task.id === taskId
+                      ? {
+                          ...task,
+                          ...updatedTask
+                        }
+                      : task
+                  )
+                );
+              })
+              .catch((error) => {
+                console.error('Error updating task:', error);
+                alert('카테고리 변경 중 오류가 발생했습니다.');
+              });
+          }
+          return; // 사용자가 취소한 경우 아무 변경 없이 리턴
+        }
+      }
+
+      if (field === 'subcategoriesName') {
+        // 이미 소분류가 선택되어 있는 경우
+        if (currentTask.subsubcategoriesName) {
+          if (window.confirm('중분류를 변경하면 선택된 소분류가 초기화됩니다. 계속하시겠습니까?')) {
+            const selectedSubcategory = currentTask.availableSubcategories.find(
+              (subcategory) => subcategory.name === value
+            );
+
+            const updatedTask = {
+              subcategoriesName: value,
+              subsubcategoriesName: '',
+              availableSubSubcategories: selectedSubcategory.subsubcategories || [],
+              baseTime: 0 // 기준시간도 초기화
+            };
+
+            // 먼저 Firestore 업데이트
+            db.collection('tasks')
+              .doc(taskId)
+              .update(updatedTask)
+              .then(() => {
+                // Firestore 업데이트 성공 후 로컬 상태 업데이트
+                setTasks((prevTasks) =>
+                  prevTasks.map((task) =>
+                    task.id === taskId
+                      ? {
+                          ...task,
+                          ...updatedTask
+                        }
+                      : task
+                  )
+                );
+              })
+              .catch((error) => {
+                console.error('Error updating task:', error);
+                alert('카테고리 변경 중 오류가 발생했습니다.');
+              });
+          }
+          return; // 사용자가 취소한 경우 아무 변경 없이 리턴
+        }
+      }
+    
+      // spentTime이 변경되어 지연 상태가 될 수 있는 경우
+      if (field === 'spentTime') {
+        const baseTime = currentTask.baseTime || 0;
+        const spentTime = Math.max(0, parseFloat(value)) || 0;
+        const remainingTime = baseTime - spentTime;
+
+        // 잔여시간이 음수이고 현재 상태가 지연이 아닌 경우
+        if (remainingTime < 0 && currentTask.status !== '지연') {
+          if (window.confirm('잔여시간이 음수입니다. 상태를 지연으로 변경하시겠습니까?')) {
+            // 사용자가 확인한 경우
+            setTasks((prevTasks) =>
+              prevTasks.map((task) =>
+                task.id === taskId
+                  ? {
+                      ...task,
+                      spentTime: value,
+                      remainingTime,
+                      status: '지연',
+                    }
+                  : task
+              )
+            );
+
+            // Firestore 업데이트
+            db.collection('tasks')
+              .doc(taskId)
+              .update({
+                spentTime: value,
+                remainingTime,
+                status: '지연',
+              });
+          } else {
+            // 사용자가 취소한 경우 spentTime을 이전 값으로 되돌림
+            const previousSpentTime = currentTask.spentTime;
+            setTasks((prevTasks) =>
+              prevTasks.map((task) =>
+                task.id === taskId
+                  ? {
+                      ...task,
+                      spentTime: previousSpentTime,
+                      remainingTime: baseTime - previousSpentTime,
+                    }
+                  : task
+              )
+            );
+          }
+          return; // 함수 종료
+        }
+      }
+    
       // 상태를 '지연'으로 변경할 때, note(사유)가 반드시 필요
       if (field === 'status' && value === '지연' && !currentTask.note.trim()) {
         alert('사유를 입력해야 상태를 "지연"으로 변경할 수 있습니다.');
@@ -245,6 +391,7 @@ function MyProject() {
     
                     if (remainingTime < 0) return '지연';
                     if (task.status === '완료') return '완료';
+                    if (task.status === '진행중') return '진행중';
                     return '할일';
                   })(),
                 }),
@@ -292,7 +439,7 @@ function MyProject() {
     const today = new Date().toISOString().split('T')[0];
 
     const newTask = {
-      date: today,  // 현재 날짜로 설정
+      date: today,
       status: '할일',
       projectName: '',
       categoriesName: '',
@@ -319,7 +466,6 @@ function MyProject() {
         console.log('Task added:', docRef.id);
       })
       .catch((error) => console.error('Error adding task:', error));
-      
   };
 
   const deleteTask = (taskId) => {
@@ -532,23 +678,29 @@ function MyProject() {
                     <input
                       type="number"
                       value={task.spentTime}
-                      onChange={(e) =>
-                        updateTaskField(task.id, 'spentTime', e.target.value)
-                      }
+                      onChange={(e) => {
+                        // 입력값이 음수인 경우 0으로 설정
+                        const value = Math.max(0, parseFloat(e.target.value) || 0);
+                        // 소수점 첫째 자리까지만 표시
+                        const formattedValue = Math.round(value * 10) / 10;
+                        updateTaskField(task.id, 'spentTime', formattedValue);
+                      }}
+                      step="0.1"
+                      min="0"
                     />
                   </div>
                   <div>
                     <span
-                        style={{
-                          color: task.status === '완료' ? 'blue' : task.remainingTime < 0 ? 'red' : 'black',
-                        }}
-                      >
-                        {task.status === '완료'
-                          ? '완료'
-                          : task.remainingTime < 0
-                          ? '지연'
-                          : task.remainingTime}
-                      </span>
+                      style={{
+                        color: task.status === '완료' ? 'blue' : task.remainingTime < 0 ? 'red' : 'black',
+                      }}
+                    >
+                      {task.status === '완료'
+                        ? '완료'
+                        : task.remainingTime < 0
+                        ? '지연'
+                        : (Math.round(task.remainingTime * 10) / 10).toFixed(1)}
+                    </span>
                   </div>
                   <div>
                     <input
