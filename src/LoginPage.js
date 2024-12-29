@@ -9,8 +9,20 @@ import { AuthContext } from './AuthProvider';
 const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAdmin, setIsAdmin } = useContext(AuthContext);
+  const { isAdmin, setIsAdmin, currentUser } = useContext(AuthContext);
   const [errorMsg, setErrorMsg] = useState('');
+
+  // 이미 로그인된 사용자 처리
+  React.useEffect(() => {
+    if (currentUser) {
+      // 이미 로그인된 사용자는 대시보드로 리디렉션
+      if (isAdmin) {
+        navigate('/admindash');
+      } else {
+        navigate('/dashboard');
+      }
+    }
+  }, [currentUser, isAdmin, navigate]);
 
   const handleIsAdmin = async (email_handle, userDocSnapshot) => {
     return userDocSnapshot.data().isSuperUser || false;

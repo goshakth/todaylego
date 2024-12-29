@@ -10,7 +10,7 @@ import './myproject.css';
 function MyProject() {
   const [tasks, setTasks] = useState([]);
   const [projects, setProjects] = useState([]);
-  const [departmentData, setDepartmentData] = useState({ categories: [] });
+  const [departmentData, setDepartmentData] = useState({});
   const [currentUserId, setCurrentUserId] = useState(null);
   const [userData, setUserData] = useState(null); // 사용자 정보 저장
 
@@ -24,16 +24,17 @@ function MyProject() {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [calendarPosition, setCalendarPosition] = useState({ top: 0, left: 0 });
 
-  // 부서 목록 상태 추가
-  const [dep] = useState([
-    { id: 'business', name: '사업부서' },
-    { id: 'Management', name: '경영부서' },
-    { id: 'Design', name: '디자인부서' }
-  ]);
-  const [selectedDepartment, setSelectedDepartment] = useState('');
+  // 부서 목록 상수
+  const depList = [
+    { value: 'business', label: '사업부서' },
+    { value: 'Management', label: '경영부서' },
+    { value: 'Design', label: '디자인부서' },
+    { value: 'newLeaf', label: '새싹부서' }
+  ];
 
-  // 작업 추가 시 부서 선택을 위한 상태
-  const [isAddingTask, setIsAddingTask] = useState(false);
+  // 상태 수정
+  const [selectedDepartment, setSelectedDepartment] = useState('');
+  const [showDepartmentSelect, setShowDepartmentSelect] = useState(false);
 
   useEffect(() => {
     const user = firebase.auth().currentUser;
@@ -430,14 +431,18 @@ function MyProject() {
       }
     };  
 
-  const addTask = () => {
-    if (!currentUserId) {
-      console.error('사용자가 로그인되지 않았습니다.');
+  const addTask = async (department) => {
+    if (!currentUserId || !department) {
+      console.error('사용자가 로그인되지 않았거나 부서가 선택되지 않았습니다.');
       return;
     }
 
+    // 부서 데이터 가져오기
+    await fetchDepartmentData(department);
+
     const today = new Date().toISOString().split('T')[0];
 
+    // 새 작업 객체 생성
     const newTask = {
       date: today,
       status: '할일',
@@ -452,20 +457,74 @@ function MyProject() {
       Usersid: currentUserId,
       userName: userData.UserName,
       userTeam: userData.UserTeam,
+      department,
       availableSubcategories: [],
       availableSubSubcategories: [],
     };
 
+    // Firestore에 작업 추가
     db.collection('tasks')
       .add(newTask)
       .then((docRef) => {
-        setTasks((prevTasks) => [
-          ...prevTasks,
-          { id: docRef.id, ...newTask },
-        ]);
-        console.log('Task added:', docRef.id);
+        // 로컬 상태 업데이트
+        setTasks(prevTasks => [...prevTasks, { id: docRef.id, ...newTask }]);
+        
+        // 부서 데이터 가져오기
+        return db.collection('departments')
+          .doc(department)
+          .get();
+      })
+      .then((doc) => {
+        if (doc.exists) {
+          setDepartmentData(prev => ({
+            ...prev,
+            [department]: doc.data()
+          }));
+        }
+
+        // 상태 초기화
+        setSelectedDepartment('');
+        setShowDepartmentSelect(false);
       })
       .catch((error) => console.error('Error adding task:', error));
+  };
+
+  // handleDepartmentChange 함수를 두 가지 용도로 분리
+  const handleDepartmentChangeForNewTask = async (e) => {
+    const department = e.target.value;
+    if (department) {
+      await fetchDepartmentData(department);
+      addTask(department);
+    }
+  };
+
+  const handleDepartmentChangeForExistingTask = async (taskId, department) => {
+    if (!taskId) return;
+    
+    // 부서 데이터 가져오기
+    await fetchDepartmentData(department);
+
+    // task 업데이트
+    const updatedTask = {
+      department,
+      categoriesName: '',
+      subcategoriesName: '',
+      subsubcategoriesName: '',
+      baseTime: 0
+    };
+
+    setTasks(prevTasks =>
+      prevTasks.map(task =>
+        task.id === taskId
+          ? { ...task, ...updatedTask }
+          : task
+      )
+    );
+
+    db.collection('tasks')
+      .doc(taskId)
+      .update(updatedTask)
+      .catch(error => console.error('Error updating task:', error));
   };
 
   const deleteTask = (taskId) => {
@@ -522,10 +581,51 @@ function MyProject() {
     };
   }, []);
 
+  // 부서 데이터를 가져오는 함수 추가
+  const fetchDepartmentData = async (department) => {
+    // 이미 데이터가 있다면 다시 가져오지 않음
+    if (departmentData[department]) {
+      return;
+    }
+
+    try {
+      const doc = await db.collection('departments').doc(department).get();
+      if (doc.exists) {
+        setDepartmentData(prev => ({
+          ...prev,
+          [department]: doc.data()
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching department data:', error);
+    }
+  };
+
   return (
     <div className="my-project">
       <div className="myproject-project-header">
-        <button onClick={addTask}>+ 작업 추가</button>
+      <div className="my-project-add-task-container">
+        <button 
+          onClick={() => setShowDepartmentSelect(true)} 
+          className="my-project-add-task-button"
+        >
+          + 작업 추가
+        </button>
+        {showDepartmentSelect && (
+          <select
+            value={selectedDepartment}
+            onChange={handleDepartmentChangeForNewTask}
+            className="department-select"
+          >
+            <option value="">부서 선택</option>
+            {depList.map(dep => (
+              <option key={dep.value} value={dep.value}>
+                {dep.label}
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
         <div className="my-project-filters">
         <select value={filters.year} onChange={(e) => handleFilterChange('year', parseInt(e.target.value))}>
           {[2023, 2024, 2025].map((year) => (

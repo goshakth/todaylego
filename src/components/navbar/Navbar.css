@@ -33,6 +33,14 @@
   transition: 0.3s;
 }
 
+.admin-nav-item {
+  text-decoration: none;
+  color: #fff;
+  font-size: 16px;
+  padding: 15px 0;
+  display: block;
+}
+
 /* 햄버거 메뉴 아이콘 초기 상태: 큰 화면에서는 숨기기 */
 .hamburger-menu {
   display: none;

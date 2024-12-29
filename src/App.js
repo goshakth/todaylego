@@ -16,7 +16,8 @@ import MyProject from './components/mypage/myproject';
 import MyDashboard from './components/mypage/mydashboard';
 import AddDepartment from './addDepartments';
 import Admindash from './components/Admin/admindash';
-
+import AddLegoData from './addLegodata';
+import Totaladmin from './components/Admin/totaladmin';
 const GlobalStyle = createGlobalStyle`
   body {
     background: #e9ecef;
@@ -37,8 +38,9 @@ function App() {
           <Route path="/dashboard" element={<PrivateRoute><MyDashboard /></PrivateRoute>} />
           <Route path="/myproject" element={<PrivateRoute><MyProject /></PrivateRoute>} />
           <Route path="/add-department" element={<PrivateRoute><AddDepartment /></PrivateRoute>} /> {/* 새 경로 추가 */}
-          
+          <Route path="/add-task" element={<PrivateRoute><AddLegoData /></PrivateRoute>} /> {/* 새 경로 추가 */}
           <Route path="/admindash" element={<PrivateRoute><Admindash/></PrivateRoute>} /> {/* 관리자 페이지 라우트 추가 */}
+          <Route path="/totaladmin" element={<PrivateRoute><Totaladmin /></PrivateRoute>} /> {/* 새로운 라우트 추가 */}
 
 
          

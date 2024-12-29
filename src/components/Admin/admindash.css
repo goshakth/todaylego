@@ -7,18 +7,28 @@
     height: calc(100vh - 70px);
   }
   
-  .admindash-filters {
+  .admindash-filters-container {
     display: flex;
-    justify-content: flex-end;
-    font-weight: bold;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 20px;
+    padding: 0 20px;
+  }
+  
+  .admindash-filters-left {
+    display: flex;
     gap: 10px;
   }
   
-  .admindash-filters select {
+  .admindash-filters-right {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .admindash-filters-left select,
+  .admindash-filters-right select {
     padding: 5px 25px;
     border: 1px solid #ccc;
-    align-items: flex-end;
     font-weight: bold;
     border-radius: 4px;
     background-color: #dddddd;
@@ -26,7 +36,8 @@
     cursor: pointer;
   }
   
-  .admindash-filters select:focus {
+  .admindash-filters-left select:focus,
+  .admindash-filters-right select:focus {
     outline: none;
     border-color: #007bff;
     background-color: #dddddd;

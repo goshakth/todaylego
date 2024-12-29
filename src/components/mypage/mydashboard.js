@@ -259,7 +259,10 @@ const MyDashboard = () => {
             total: {
               show: true,
               label: 'TOTAL',
-              formatter: () => `${chartData.projectSeries.reduce((a, b) => a + b, 0)} h`,
+              formatter: () => {
+                const total = chartData.projectSeries.reduce((a, b) => a + b, 0);
+                return `${total.toFixed(1)} h`;
+              },
             },
           },
         },
@@ -271,9 +274,9 @@ const MyDashboard = () => {
       fontSize: '15px',
       formatter: (seriesName, opts) => {
         const index = opts.seriesIndex;
-        const hours = chartData.projectSeries[index];
+        const hours = chartData.projectSeries[index].toFixed(1);
         const totalHours = chartData.projectSeries.reduce((a, b) => a + b, 0);
-        const percentage = ((hours / totalHours) * 100).toFixed(1);
+        const percentage = ((chartData.projectSeries[index] / totalHours) * 100).toFixed(1);
 
         return `
           <div style="display: flex; align-items: flex-start; justify-content: space-between; width: 300px;">
@@ -285,7 +288,7 @@ const MyDashboard = () => {
     },
     tooltip: {
       y: {
-        formatter: (val) => `${val} h`,
+        formatter: (val) => `${val.toFixed(1)} h`,
       },
     },
   };

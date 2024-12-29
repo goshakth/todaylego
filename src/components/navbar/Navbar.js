@@ -4,7 +4,7 @@ import { AuthContext } from "../../AuthProvider";
 import "./navbar.css";
 
 function Navbar() {
-  const { currentUser } = useContext(AuthContext);
+  const { currentUser, isAdmin } = useContext(AuthContext);
   const [isSidebarVisible, setSidebarVisible] = useState(false);
 
   // 사이드바 표시 상태를 토글하는 함수
@@ -27,16 +27,35 @@ function Navbar() {
       {/* 사이드바 */}
       <div className={`sidebar ${isSidebarVisible ? "is-visible" : ""}`}>
         <ul className="nav-links">
-          <li>
-            <Link to="/dashboard" className="nav-item">
-              📊 Dashboard
-            </Link>
-          </li>
-          <li>
-            <Link to="/myproject" className="nav-item">
-              📁 My 프로젝트
-            </Link>
-          </li>
+          {isAdmin ? (
+            // 어드민 사용자용 메뉴
+            <>
+              <li>
+                <Link to="/totaladmin" className="admin-nav-item">
+                  🏠 관리자 HOME
+                </Link>
+              </li>
+              <li>
+                <Link to="/admindash" className="admin-nav-item">
+                  🔑 관리자 Dashboard
+                </Link>
+              </li>
+            </>
+          ) : (
+            // 일반 사용자용 메뉴
+            <>
+              <li>
+                <Link to="/dashboard" className="nav-item">
+                  📊 Dashboard
+                </Link>
+              </li>
+              <li>
+                <Link to="/myproject" className="nav-item">
+                  📁 My 프로젝트
+                </Link>
+              </li>
+            </>
+          )}
         </ul>
       </div>
     </div>
