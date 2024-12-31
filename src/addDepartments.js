@@ -1370,11 +1370,263 @@ function AddDepartment() {
             }
         ]
     }; //414개 디자인팀
+    const departmentData4 ={
+      name: '교육부서',
+      categories: [
+        {
+          id: 'category1',
+          name: '교육운영',
+          subcategories: [
+            {
+              id: 'subcategory1',
+              name: '교육계획',
+              subsubcategories: [
+                { id: 'subsubcategory1', name: '교육운영계획서 자료수집', baseTime: 3 },
+                { id: 'subsubcategory2', name: '교육운영계획서 작성', baseTime: 2 },
+                { id: 'subsubcategory3', name: '교육과정 설계', baseTime: 5 },
+                { id: 'subsubcategory4', name: '교육운영계획서식약처 발송', baseTime: 1 },
+              ],
+            },
+            {
+              id: 'subcategory2',
+              name: '교육콘텐츠개발',
+              subsubcategories: [
+                { id: 'subsubcategory5', name: '교육콘텐츠 개발 관련 데이터 취합', baseTime: 8 },
+                { id: 'subsubcategory6', name: '교육콘텐츠 개발 관련 계획 작성 및 보고', baseTime: 8 },
+                { id: 'subsubcategory7', name: '교육콘텐츠 개발 전문가 위촉', baseTime: 2 },
+                { id: 'subsubcategory8', name: '교육콘텐츠 개발 업체 선정', baseTime: 5 },
+                { id: 'subsubcategory9', name: '교육콘텐츠 감수', baseTime: 4 },
+                { id: 'subsubcategory10', name: '교육콘텐츠 이력서 작성(표준교재)', baseTime: 8 },
+                { id: 'subsubcategory11', name: '교육콘텐츠 개정사항 비교표 작성(표준교재)', baseTime: 2 },
+                { id: 'subsubcategory12', name: '강의자료 검토', baseTime: 1 },
+                { id: 'subsubcategory13', name: '강의자료 요청/수정요청/취합/직접 수정', baseTime: 1 },
+                { id: 'subsubcategory14', name: '최신 개정사항 모니터링 및 기록서 작성', baseTime: 1 },
+                { id: 'subsubcategory15', name: '강의자료 관리', baseTime: 10 },
+              ],
+            },
+            {
+              id: 'subcategory3',
+              name: '교육준비',
+              subsubcategories: [
+                { id: 'subsubcategory16', name: '강의 준비(현장 준비)', baseTime: 1 },
+                { id: 'subsubcategory17', name: '강의 안내사항 및 자료 송부', baseTime: 0.5 },
+                { id: 'subsubcategory18', name: '강의자료 제본 및 식당 예약', baseTime: 0.5 },
+                { id: 'subsubcategory19', name: '교육생 정보 확인', baseTime: 0.2 },
+                { id: 'subsubcategory20', name: '교육생 입실 체크', baseTime: 0.2 },
+              ],
+            },
+            {
+              id: 'subcategory4',
+              name: '교육진행',
+              subsubcategories: [
+                { id: 'subsubcategory21', name: '온라인교육 송출(문제상황 대처)', baseTime: 8 },
+                { id: 'subsubcategory22', name: '교육 운영(문의 응대)', baseTime: 8 },
+              ],
+            },
+            {
+              id: 'subcategory5',
+              name: '교육후속조치',
+              subsubcategories: [
+                { id: 'subsubcategory23', name: '교육만족도조사 통계 정리', baseTime: 0.5 },
+                { id: 'subsubcategory24', name: '교육수료처리 및 실적보고', baseTime: 0.5 },
+                { id: 'subsubcategory25', name: '월별 결과보고서 작성 및 보고', baseTime: 2 },
+                { id: 'subsubcategory26', name: '교육운영자 교육 훈련 계획수립', baseTime: 1 },
+                { id: 'subsubcategory27', name: '교육운영자 교육 훈련 이수', baseTime: 8 },
+                { id: 'subsubcategory28', name: '교육운영자 교육 훈련 결과보고', baseTime: 1 },
+              ],
+            },
+            {
+              id: 'subcategory6',
+              name: '평가문제',
+              subsubcategories: [
+                { id: 'subsubcategory29', name: '강사별 평가문제 출제 요청 및 취합', baseTime: 1 },
+                { id: 'subsubcategory30', name: '평가문제 검토 및 의견서 작성', baseTime: 0.5 },
+                { id: 'subsubcategory31', name: '평가문제 코드 부여', baseTime: 1 },
+                { id: 'subsubcategory32', name: '평가문제 등록(교육홈페이지)', baseTime: 0.5 },
+                { id: 'subsubcategory33', name: '평가문제 이력관리 대장 작성', baseTime: 0.5 },
+                { id: 'subsubcategory34', name: '문제은행 운영방안 마련', baseTime: 1 },
+              ],
+            },
+          ],
+        },
+        {
+          id: 'category2',
+          name: '시설_장비관리',
+          subcategories: [
+            {
+              id: 'subcategory7',
+              name: '교육홈페이지',
+              subsubcategories: [
+                { id: 'subsubcategory35', name: 'LMS 강의개설', baseTime: 0.5 },
+                { id: 'subsubcategory36', name: '교육홈페이지 오류 및 개선사항 확인(관리자 페이지 포함)', baseTime: 16 },
+                { id: 'subsubcategory37', name: '교육홈페이지 수정작업 지시', baseTime: 16 },
+                { id: 'subsubcategory38', name: '교육홈페이지 수정작업 검수', baseTime: 16 },
+                { id: 'subsubcategory39', name: '개인정보보호 법령 준수 검토', baseTime: 1 },
+              ],
+            },
+            {
+              id: 'subcategory8',
+              name: '송출_시설장비',
+              subsubcategories: [
+                { id: 'subsubcategory40', name: '센터 시설 보안 및 점검사항 파일 취합 및 재가공', baseTime: 1 },
+                { id: 'subsubcategory41', name: '송출장비 오류 및 개선사항 확인', baseTime: 4 },
+                { id: 'subsubcategory42', name: '송출장비 관련 전문가 자문', baseTime: 2 },
+                { id: 'subsubcategory43', name: '송출장비 개선 관련 장비 세팅', baseTime: 2 },
+                { id: 'subsubcategory44', name: '송출장비 개선 검토(테스트)', baseTime: 2 },
+                { id: 'subsubcategory45', name: '송출장비 관리', baseTime: 10 },
+                { id: 'subsubcategory46', name: 'VR장비 대여/점검/반납', baseTime: 2 },
+              ],
+            },
+          ],
+        },
+        {
+          id: 'category3',
+          name: '강사관리',
+          subcategories: [
+            {
+              id: 'subcategory9',
+              name: '강사관리전체',
+              subsubcategories: [
+                { id: 'subsubcategory47', name: '강의계획서/구비서류 취합', baseTime: 1 },
+                { id: 'subsubcategory48', name: '강사별 강의범위 조사 및 취합', baseTime: 0.5 },
+                { id: 'subsubcategory49', name: '강사선정 및 배정', baseTime: 0.5 },
+                { id: 'subsubcategory50', name: '강사 섭외 / 일정조율', baseTime: 1 },
+                { id: 'subsubcategory51', name: '강사위촉자료 수집', baseTime: 1 },
+                { id: 'subsubcategory52', name: '강사위촉자료 분석 및 평가', baseTime: 1 },
+                { id: 'subsubcategory53', name: '강사 위촉장 발급 / 대장 관리', baseTime: 0.5 },
+                { id: 'subsubcategory54', name: '강사 정보 등록(LMS)', baseTime: 0.2 },
+                { id: 'subsubcategory55', name: '정기적 강사평가', baseTime: 0.5 },
+                { id: 'subsubcategory56', name: '정기적 강사평가 보고 자료 준비', baseTime: 1.5 },
+                { id: 'subsubcategory57', name: '강사평가 공문 작성 및 접수', baseTime: 0.1 },
+                { id: 'subsubcategory58', name: '강사현황 검토 및 POOL/수준 관리', baseTime: 0.2 },
+                { id: 'subsubcategory59', name: '내외부 강사 훈련계획안 작성', baseTime: 2 },
+                { id: 'subsubcategory60', name: '내외부강사 훈련결과보고 작성', baseTime: 2 },
+                { id: 'subsubcategory61', name: '내부강사 교육이수', baseTime: 6 },
+                { id: 'subsubcategory62', name: '전임강사 교육이수', baseTime: 24 },
+              ],
+            },
+          ],
+        },
+        {
+          id: 'category4',
+          name: '교육홍보',
+          subcategories: [
+            {
+              id: 'subcategory10',
+              name: '교육홍보준비',
+              subsubcategories: [
+                { id: 'subsubcategory63', name: '홍보계획안 작성', baseTime: 4 },
+                { id: 'subsubcategory64', name: '홍보물 초안작성', baseTime: 3 },
+                { id: 'subsubcategory65', name: '홍보물 제작(디자인작업)', baseTime: 0 },
+                { id: 'subsubcategory66', name: '홍보처 정보 수집', baseTime: 4 }
+              ]
+            },
+            {
+              id: 'subcategory11',
+              name: '교육홍보진행',
+              subsubcategories: [
+                { id: 'subsubcategory67', name: '홍보 진행', baseTime: 0.5 }
+              ]
+            },
+            {
+              id: 'subcategory12',
+              name: '교육홍보_후속조치_결과보고',
+              subsubcategories: [
+                { id: 'subsubcategory68', name: '홍보 결과 정리 및 보고', baseTime: 1 }
+              ]
+            }
+          ]
+        },
+        {
+          id: 'category5',
+          name: '교육팀_행정',
+          subcategories: [
+            {
+              id: 'subcategory13',
+              name: '정기회의',
+              subsubcategories: [
+                { id: 'subsubcategory69', name: '회의자료 작성(HWP)', baseTime: 1 },
+                { id: 'subsubcategory70', name: '회의자료 작성(PPT)', baseTime: 5 }
+              ]
+            },
+            {
+              id: 'subcategory14',
+              name: '지출결의',
+              subsubcategories: [
+                { id: 'subsubcategory71', name: '결제 건 관련 증빙서류 확인 및 취합 - 증빙 취합이 복잡할 경우', baseTime: 1 },
+                { id: 'subsubcategory72', name: '결제 건 관련 증빙서류 확인 및 취합 - 단순지출 증빙일 경우', baseTime: 0.1 },
+                { id: 'subsubcategory73', name: '지출결의', baseTime: 0.2 },
+                { id: 'subsubcategory74', name: '집행등록(이지바로)', baseTime: 0.5 },
+                { id: 'subsubcategory75', name: '집행등록(이나라도움/RCMS)', baseTime: 0.2 },
+                { id: 'subsubcategory76', name: '집행등록(NIPA 시스템)', baseTime: 0.1 },
+                { id: 'subsubcategory77', name: '예산 변경(더존, 연구관리시스템)', baseTime: 0.5 },
+                { id: 'subsubcategory78', name: '지출계획 수립에 대한 행정 처리 소요시간', baseTime: 1 }
+              ]
+            },
+            {
+              id: 'subcategory15',
+              name: '출장',
+              subsubcategories: [
+                { id: 'subsubcategory79', name: '출장신청서', baseTime: 0.2 },
+                { id: 'subsubcategory80', name: '출장보고서', baseTime: 0.5 }
+              ]
+            },
+            {
+              id: 'subcategory16',
+              name: '회의록',
+              subsubcategories: [
+                { id: 'subsubcategory81', name: '사전품의', baseTime: 0.2 },
+                { id: 'subsubcategory82', name: '회의록 작성', baseTime: 0.6 }
+              ]
+            },
+            {
+              id: 'subcategory17',
+              name: '기타',
+              subsubcategories: [
+                { id: 'subsubcategory83', name: '협회 업무, 근태 결의 등', baseTime: 0.5 }
+              ]
+            }
+          ]
+        },
+        {
+          id: 'category6',
+          name: '교육팀_수정검토',
+          subcategories: [
+            {
+              id: 'subcategory18',
+              name: '교육팀_수정검토업무', 
+              subsubcategories: [
+                { id: 'subsubcategory84', name: '간단검토(1시간내)', baseTime: 1 },
+                { id: 'subsubcategory85', name: '상세검토(3시간내)', baseTime: 3 }
+              ]
+            },
+          ]
+        },
+        {
+          id: 'category7',
+          name: '교육팀_기타',
+          subcategories: [
+            {
+              id: 'subcategory19',
+              name: '교육_기타', 
+              subsubcategories: [
+                { id: 'subsubcategory86', name: '타부서지원', baseTime: 1 },
+                { id: 'subsubcategory87', name: '회의참석', baseTime: 1, },
+                { id: 'subsubcategory88', name: '수강 신청 현황 정리 및 업데이트', baseTime: 0.5, },
+                { id: 'subsubcategory89', name: '수강생 DB 관리 및 업데이트', baseTime: 1, },
+                { id: 'subsubcategory90', name: '오프라인 강의장 대관 운영 지원', baseTime: 2, },
+                { id: 'subsubcategory91', name: '센터 문의 대응', baseTime: 0.1, }
+              ]
+            },
+          ]
+        }           
+      ],
+    };
 
     const addDepartmentData = () => {
         db.collection('departments')
-            .doc('business')
-            .set(departmentData)
+            .doc('education')
+            .set(departmentData4)
             .then(() => console.log('Department data added successfully!'))
             .catch((error) => console.error('Error adding department data:', error));
     };

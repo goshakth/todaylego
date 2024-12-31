@@ -71,7 +71,7 @@ function MyProject() {
         .split('T')[0];
 
       db.collection('tasks')
-        .where('Usersid', '==', currentUserId)
+        .where('Uesrsid', '==', currentUserId)
         .where('date', '>=', startOfMonth)
         .where('date', '<=', endOfMonth)
         .get()
@@ -454,7 +454,7 @@ function MyProject() {
       spentTime: 0,
       remainingTime: 0,
       note: '',
-      Usersid: currentUserId,
+      Uesrsid: currentUserId, // Uesrsid 데이터 JSON 확인해야함
       userName: userData.UserName,
       userTeam: userData.UserTeam,
       department,
