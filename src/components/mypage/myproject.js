@@ -61,7 +61,6 @@ function MyProject() {
 
   useEffect(() => {
     if (currentUserId) {
-      // 시작일과 종료일을 YYYY-MM-DD 형식으로 변환
       const startOfMonth = new Date(filters.year, filters.month - 1, 1)
         .toISOString()
         .split('T')[0];
@@ -69,41 +68,62 @@ function MyProject() {
         .toISOString()
         .split('T')[0];
 
+      // tasks 가져오기
       db.collection('tasks')
         .where('Uesrsid', '==', currentUserId)
         .where('date', '>=', startOfMonth)
         .where('date', '<=', endOfMonth)
         .get()
         .then((snapshot) => {
-          const fetchedTasks = snapshot.docs.map((doc) => {
-            const taskData = doc.data();
-            const category = departmentData.categories.find(
-              (cat) => cat.name === taskData.categoriesName
-            );
-            const subcategory = category
-              ? category.subcategories.find(
-                  (sub) => sub.name === taskData.subcategoriesName
-                )
-              : null;
-
-            return {
-              id: doc.id,
-              ...taskData,
-              availableSubcategories: category ? category.subcategories : [],
-              availableSubSubcategories: subcategory
-                ? subcategory.subsubcategories
-                : [],
-              userName: userData.UserName || '알 수 없음',
-              userTeam: userData.UserTeam || '알 수 없음',
-            };
-          });
+          const fetchedTasks = snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+            userName: userData.UserName || '알 수 없음',
+            userTeam: userData.UserTeam || '알 수 없음',
+          }));
           setTasks(fetchedTasks);
         })
         .catch((error) => console.error('Error fetching tasks:', error));
     }
-  }, [currentUserId, departmentData, filters, userData]);
-  
-  
+  }, [currentUserId, filters, userData]); // departmentData 의존성 제거
+
+  // 별도의 useEffect로 tasks 업데이트
+  useEffect(() => {
+    if (departmentData && tasks.length > 0) {
+      const updatedTasks = tasks.map(task => {
+        try {
+          const department = task.department;
+          const departmentCategories = departmentData[department].categories || [];
+          
+          const category = departmentCategories.find(
+            (cat) => cat.name === task.categoriesName
+          );
+
+          // Optional chaining 사용하여 안전하게 접근
+          const subcategory = category.subcategories.find(
+            (sub) => sub.name === task.subcategoriesName
+          );
+
+          return {
+            ...task,
+            availableSubcategories: category.subcategories || [],
+            availableSubSubcategories: subcategory.subsubcategories || [],
+          };
+        } catch (error) {
+          console.error('Error processing task:', task, error);
+          // 에러 발생 시 기존 task 반환
+          return {
+            ...task,
+            availableSubcategories: [],
+            availableSubSubcategories: [],
+          };
+        }
+      });
+
+      setTasks(updatedTasks);
+    }
+  }, [departmentData]); // departmentData가 변경될 때만 실행
+
   useEffect(() => {
     // 모든 부서의 데이터를 가져오도록 수정
     const departments = ['business', 'Management', 'Design'];
