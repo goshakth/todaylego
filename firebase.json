@@ -3,7 +3,7 @@
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   },
-  "hosting": {
+"hosting": {
     "public": "build",
     "ignore": [
       "firebase.json",

@@ -31,12 +31,12 @@ function Navbar() {
             // 어드민 사용자용 메뉴
             <>
               <li>
-                <Link to="/totaladmin" className="admin-nav-item">
+                <Link to="/totaladmin" className="admin-nav-item" onClick={() => setSidebarVisible(false)}>
                   🏠 관리자 HOME
                 </Link>
               </li>
               <li>
-                <Link to="/admindash" className="admin-nav-item">
+                <Link to="/admindash" className="admin-nav-item" onClick={() => setSidebarVisible(false)}>
                   🔑 관리자 Dashboard
                 </Link>
               </li>
@@ -45,17 +45,23 @@ function Navbar() {
             // 일반 사용자용 메뉴
             <>
               <li>
-                <Link to="/dashboard" className="nav-item">
+                <Link to="/dashboard" className="nav-item" onClick={() => setSidebarVisible(false)}>
                   📊 Dashboard
                 </Link>
               </li>
               <li>
-                <Link to="/myproject" className="nav-item">
+                <Link to="/myproject" className="nav-item" onClick={() => setSidebarVisible(false)}>
                   📁 My 프로젝트
                 </Link>
               </li>
             </>
           )}
+          
+          <li>
+            <Link to="/setup" className="nav-item setup-link" onClick={() => setSidebarVisible(false)}>
+              ⚙️ 계정 정보 설정
+            </Link>
+          </li>
         </ul>
       </div>
     </div>

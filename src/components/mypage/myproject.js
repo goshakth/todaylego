@@ -29,7 +29,6 @@ function MyProject() {
     { value: 'business', label: '사업부서' },
     { value: 'Management', label: '경영부서' },
     { value: 'Design', label: '디자인부서' },
-    { value: 'newLeaf', label: '새싹부서' }
   ];
 
   // 상태 수정
@@ -106,38 +105,26 @@ function MyProject() {
   
   
   useEffect(() => {
-    if(userData && userData.isRole ){
-      let documentName = '';
-
-      switch(userData.isRole){
-        case '1':
-          documentName = 'business';
-          break;
-        case '2':
-          documentName = 'Management';
-          break;
-        case '3':
-          documentName = 'Design';
-          break;
-
-        default:
-          console.error('잘못된 사용자 역할입니다.',userData.isRole);
-          return; 
-      }
+    // 모든 부서의 데이터를 가져오도록 수정
+    const departments = ['business', 'Management', 'Design'];
+    
+    departments.forEach(documentName => {
       db.collection('departments')
-      .doc(documentName)
-      .get()
-      .then((doc) => {
-        if (doc.exists) {
-          setDepartmentData(doc.data());
-        } else {
-          console.error('No such document!');
-        }
-      })
-      .catch((error) => console.error('Error fetching department data:', error));
-      
-    }
-  }, [userData]);
+        .doc(documentName)
+        .get()
+        .then((doc) => {
+          if (doc.exists) {
+            setDepartmentData(prev => ({
+              ...prev,
+              [documentName]: doc.data()
+            }));
+          } else {
+            console.error(`No such document: ${documentName}`);
+          }
+        })
+        .catch((error) => console.error('Error fetching department data:', error));
+    });
+  }, []);
 
   useEffect(() => {
     db.collection('projects')
@@ -200,15 +187,25 @@ function MyProject() {
       setFilters((prev) => ({ ...prev, [field]: value }));
     };
 
-    const updateTaskField = (taskId, field, value) => {
+    const updateTaskField = async (taskId, field, value) => {
       const currentTask = tasks.find((task) => task.id === taskId);
-    
+      
+      // 부서 변경 시 해당 부서 데이터만 가져오기
+      if (field === 'department') {
+        await fetchDepartmentData(value);
+      }
+
+      // 현재 작업의 부서 데이터가 없다면 가져오기
+      if (!departmentData[currentTask.department]) {
+        await fetchDepartmentData(currentTask.department);
+      }
+
       // 카테고리 변경 관련 로직
       if (field === 'categoriesName') {
         // 이미 하위 카테고리가 선택되어 있는 경우
         if (currentTask.subcategoriesName || currentTask.subsubcategoriesName) {
           if (window.confirm('대분류를 변경하면 선택된 중분류와 소분류가 초기화됩니다. 계속하시겠습니까?')) {
-            const selectedCategory = departmentData.categories.find(
+            const selectedCategory = departmentData[currentTask.department].categories.find(
               (category) => category.name === value
             );
 
@@ -368,7 +365,7 @@ function MyProject() {
                   subcategoriesName: '',
                   subsubcategoriesName: '',
                   availableSubcategories:
-                    departmentData.categories.find((category) => category.name === value)
+                    departmentData[task.department].categories.find((category) => category.name === value)
                       .subcategories || [],
                   availableSubSubcategories: [],
                 }),
@@ -437,7 +434,7 @@ function MyProject() {
       return;
     }
 
-    // 부서 데이터 가져오기
+    // 선택된 부서의 데이터만 가져오기
     await fetchDepartmentData(department);
 
     const today = new Date().toISOString().split('T')[0];
@@ -454,7 +451,7 @@ function MyProject() {
       spentTime: 0,
       remainingTime: 0,
       note: '',
-      Uesrsid: currentUserId, // Uesrsid 데이터 JSON 확인해야함
+      Uesrsid: currentUserId, // 철자가 맞는지 확인
       userName: userData.UserName,
       userTeam: userData.UserTeam,
       department,
@@ -581,9 +578,9 @@ function MyProject() {
     };
   }, []);
 
-  // 부서 데이터를 가져오는 함수 추가
+  // 필요한 부서 데이터만 가져오는 함수
   const fetchDepartmentData = async (department) => {
-    // 이미 데이터가 있다면 다시 가져오지 않음
+    // 이미 해당 부서 데이터가 있다면 다시 가져오지 않음
     if (departmentData[department]) {
       return;
     }
@@ -597,7 +594,7 @@ function MyProject() {
         }));
       }
     } catch (error) {
-      console.error('Error fetching department data:', error);
+      console.error(`Error fetching department data for ${department}:`, error);
     }
   };
 
@@ -705,11 +702,11 @@ function MyProject() {
                       className="myproject-category-select"
                     >
                       <option value="">대분류</option>
-                      {departmentData.categories.map((category) => (
+                      {departmentData[task.department].categories.map((category) => (
                         <option key={category.id} value={category.name}>
                           {category.name}
                         </option>
-                      ))}
+                      )) || []}
                     </select>
                   </div>
                   <div>

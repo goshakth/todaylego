@@ -69,3 +69,27 @@
       display: flex;
   }
 }
+
+.setup-link {
+  background-color: #2e2d2f;
+  color: #fff;
+  font-weight: 500;
+  border-top: 1px solid #e9ecef;  /* 구분선 추가 */
+}
+
+.setup-link:hover {
+  background-color: #474747;
+  color: #fff;
+}
+
+.sidebar-header {
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.user-info {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #333;
+}

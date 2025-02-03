@@ -109,7 +109,7 @@ const MyDashboard = () => {
         console.log(`Current User ID: ${currentUserId}`);
   
         const snapshot = await db.collection('tasks')
-          .where('Usersid', '==', currentUserId)
+          .where('Uesrsid', '==', currentUserId)
           .where('date', '>=', startOfMonth)
           .where('date', '<=', endOfMonth)
           .get();

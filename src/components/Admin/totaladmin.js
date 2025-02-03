@@ -28,6 +28,8 @@ const Totaladmin = () => {
     endDate: ''     // 종료일
   });
 
+  const [filteredTasks, setFilteredTasks] = useState([]);
+
   const TOTAL_YEARLY_HOURS = 2800;
   const CACHE_KEY = 'totaladmin_tasks';
   const CACHE_TIMESTAMP_KEY = 'totaladmin_timestamp';
@@ -97,54 +99,70 @@ const Totaladmin = () => {
 
   // 차트 데이터 업데이트 함수 수정
   const updateChartData = (taskList) => {
-    // 선택된 직원의 사업별 소요시간 계산
-    const projectSpentTimes = {};
-    let totalSpentTime = 0;
-
-    // 선택된 직원의 데이터만 필터링
+    // 필터링된 태스크 목록 생성
     const filteredTasks = taskList.filter(task => {
-      // 직원이 선택된 경우에만 필터링
       if (filters.employee !== '직원명') {
         return task.userName === filters.employee;
       }
-      return false; // 직원이 선택되지 않은 경우 데이터를 표시하지 않음
+      return false;
     });
 
-    // 사업별 소요시간 집계
+    // 프로젝트별 소요시간을 저장할 객체
+    const projectSpentTimes = {};
+    const monthlyTotalData = Array(12).fill(0);
+    let totalSpentTime = 0;  // 전체 소요시간
+
+    // 각 태스크를 한 번만 처리
+    const processedTasks = new Set();  // 처리된 태스크를 추적
+
     filteredTasks.forEach(task => {
-      const projectName = task.projectName || '미지정';
+      // 이미 처리된 태스크는 건너뛰기
+      const taskId = task.id || `${task.date}-${task.projectName}`;
+      if (processedTasks.has(taskId)) return;
+      processedTasks.add(taskId);
+
       const spentTime = parseFloat(task.spentTime) || 0;
-      
+      const projectName = task.projectName || '기타';
+      const taskDate = new Date(task.date);
+      const monthIndex = taskDate.getMonth();
+
+      // 프로젝트별 소요시간 누적
       if (!projectSpentTimes[projectName]) {
         projectSpentTimes[projectName] = 0;
       }
       projectSpentTimes[projectName] += spentTime;
+
+      // 월별 소요시간 누적
+      monthlyTotalData[monthIndex] += spentTime;
+
+      // 전체 소요시간 누적
       totalSpentTime += spentTime;
     });
 
     // 데이터가 있는 경우에만 차트 업데이트
     if (totalSpentTime > 0) {
-      // 차트 데이터 포맷 변환 (소요시간이 있는 사업만 표시)
+      // 프로젝트별 데이터 정렬
       const sortedProjects = Object.entries(projectSpentTimes)
-        .sort((a, b) => b[1] - a[1]) // 소요시간 기준 내림차순 정렬
-        .filter(([_, time]) => time > 0); // 소요시간이 0보다 큰 것만 필터링
+        .sort((a, b) => b[1] - a[1])
+        .filter(([_, time]) => time > 0);
 
-      const series = sortedProjects.map(([_, time]) => time);
+      // 모든 시간 값을 2로 나눔
+      const adjustedTotal = totalSpentTime;
+      const adjustedSeries = sortedProjects.map(([_, time]) => time);
       const labels = sortedProjects.map(([name, _]) => name);
 
       setChartData({
         yearlyTotal: {
-          series,
-          labels,
-          total: totalSpentTime
+          series: adjustedSeries,
+          labels: labels,
+          total: adjustedTotal
         },
         monthlySeries: [{
           name: '월별 투입시간',
-          data: Array(12).fill(0)
+          data: monthlyTotalData
         }]
       });
     } else {
-      // 데이터가 없는 경우 초기화
       setChartData({
         yearlyTotal: {
           series: [],
@@ -160,9 +178,17 @@ const Totaladmin = () => {
   };
 
   const handleScroll = (e) => {
-    const bottom = e.target.scrollHeight - e.target.scrollTop === e.target.clientHeight;
-    if (bottom) {
-      setVisibleTasks(prev => prev + 20);
+    const { scrollTop, clientHeight, scrollHeight } = e.target;
+    
+    // 스크롤이 하단에서 100px 이내일 때 추가 로드
+    if (scrollHeight - scrollTop <= clientHeight + 100) {
+      // 필터링된 전체 태스크 수 확인
+      const filteredTasksCount = getFilteredTasks().length;
+      
+      // 현재 보여지는 태스크 수가 전체 태스크 수보다 적을 때만 추가
+      if (visibleTasks < filteredTasksCount) {
+        setVisibleTasks(prev => prev + 20);
+      }
     }
   };
 
@@ -180,7 +206,9 @@ const Totaladmin = () => {
               show: true,
               label: 'TOTAL',
               formatter: function (w) {
-                const total = chartData.yearlyTotal.total || 0;
+                // 총 소요시간 계산 수정
+                //const total = chartData.yearlyTotal.series.reduce((acc, val) => acc + val, 0);
+                const total = chartData.yearlyTotal.total;
                 // 사업이 선택된 경우
                 if (filters.project !== '사업명') {
                   return `${filters.project}\n${total.toFixed(1)} h`;
@@ -199,21 +227,9 @@ const Totaladmin = () => {
     },
     tooltip: {
       y: {
-        formatter: function(value, opts) {
-          if (!opts || !opts.w || !opts.w.config || !opts.w.config.labels) {
-            return `${value.toFixed(1)}h`;
-          }
-
-          const seriesIndex = opts.seriesIndex || 0;
-          const name = opts.w.config.labels[seriesIndex] || '';
-          const total = chartData.yearlyTotal.total || 0;
-          
-          if (total === 0) {
-            return `${name}: ${value.toFixed(1)}h (0%)`;
-          }
-          
-          const percentage = ((value / total) * 100).toFixed(1);
-          return `${name}: ${value.toFixed(1)}h (${percentage}%)`;
+        formatter: function(value) {
+          // 툴크 값도 2로 나누어 표시
+          return `${(value / 2).toFixed(1)}h`;
         }
       }
     },
@@ -221,14 +237,15 @@ const Totaladmin = () => {
       position: 'right',
       formatter: function(seriesName, opts) {
         if (!opts || !opts.w || !opts.w.globals || !opts.w.globals.series) {
-          return `${seriesName} - 0h (0%)`;
+          return `${seriesName} - 0.0h (0.0%)`;
         }
 
-        const value = opts.w.globals.series[opts.seriesIndex] || 0;
-        const total = chartData.yearlyTotal.total || 0;
+        // 레전드 값도 2로 나누어 표시
+        const value = (opts.w.globals.series[opts.seriesIndex] || 0) / 2;
+        const total = (chartData.yearlyTotal.total || 0) / 2;
         
         if (total === 0) {
-          return `${seriesName} - ${value.toFixed(1)}h (0%)`;
+          return `${seriesName} - ${value.toFixed(1)}h (0.0%)`;
         }
         
         const percentage = ((value / total) * 100).toFixed(1);
@@ -242,12 +259,21 @@ const Totaladmin = () => {
     return typeof value === 'number' ? value.toFixed(1) : '0.0';
   };
 
+  const [selectedCategory, setSelectedCategory] = useState(null);
+
   const [monthlyChartOptions, setMonthlyChartOptions] = useState({
     chart: {
       type: 'bar',
       stacked: true,
       toolbar: {
         show: true
+      },
+      events: {
+        dataPointSelection: function(event, chartContext, config) {
+          const category = config.w.globals.labels[config.dataPointIndex];
+          setSelectedCategory(category);
+          setSelectedSubcategory('전체');  // 새 카테고리 선택 시에만 '전체'로 초기화
+        }
       }
     },
     plotOptions: {
@@ -258,6 +284,15 @@ const Totaladmin = () => {
     },
     xaxis: {
       categories: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
+      labels: {
+        show: true,
+        rotate: -45,
+        style: {
+          fontSize: '12px'
+        }
+      }
+    },
+    yaxis: {
       title: {
         text: '소요시간 (시간)'
       },
@@ -266,15 +301,6 @@ const Totaladmin = () => {
           return formatValue(value);
         }
       }
-    },
-    yaxis: {
-      title: {
-        text: '소요시간 (시간)'
-      }
-    },
-    legend: {
-      position: 'right',
-      offsetY: 40
     },
     fill: {
       opacity: 1
@@ -369,19 +395,48 @@ const Totaladmin = () => {
     }
   }, [tasks]);
 
-  // 필터링된 태스크 가져오기
+  // 소분류 필터 상태 수정
+  const [selectedSubcategory, setSelectedSubcategory] = useState('전체');
+
+  // 선택된 카테고리의 소분류 목록을 가져오는 함수 수정
+  const getSubcategories = () => {
+    if (!selectedCategory) return [];
+    
+    // 캐시된 데이터에서 모든 태스크 가져오기
+    const cachedData = localStorage.getItem(CACHE_KEY);
+    if (!cachedData) return [];
+    
+    const allTasks = JSON.parse(cachedData);
+    
+    // 현재 선택된 카테고리와 프로젝트에 해당하는 모든 소분류 가져오기
+    const subcategories = allTasks
+      .filter(task => 
+        task.categoriesName === selectedCategory && 
+        (filters.project === '사업명' || task.projectName === filters.project)
+      )
+      .map(task => task.subcategoriesName)
+      .filter((subcategory, index, self) => 
+        subcategory && self.indexOf(subcategory) === index
+      );
+    
+    return ['전체', ...subcategories];
+  };
+
+  // getFilteredTasks 함수 수정
   const getFilteredTasks = () => {
     return tasks.filter(task => {
       const matchesProject = filters.project === '사업명' || task.projectName === filters.project;
       const matchesTeam = filters.team === '부서명' || task.userTeam === filters.team;
       const matchesEmployee = filters.employee === '직원명' || task.userName === filters.employee;
+      const matchesCategory = !selectedCategory || task.categoriesName === selectedCategory;
+      const matchesSubcategory = selectedSubcategory === '전체' || task.subcategoriesName === selectedSubcategory;
       
-      // 날짜 필터 추가
       const taskDate = new Date(task.date);
       const matchesDateRange = (!filters.startDate || taskDate >= new Date(filters.startDate)) &&
                              (!filters.endDate || taskDate <= new Date(filters.endDate));
       
-      return matchesProject && matchesTeam && matchesEmployee && matchesDateRange;
+      return matchesProject && matchesTeam && matchesEmployee && matchesDateRange && 
+             matchesCategory && matchesSubcategory;
     });
   };
 
@@ -390,7 +445,6 @@ const Totaladmin = () => {
     let newFilters;
     
     if (field === 'employee') {
-      // 직원 선택 시 사업 필터 초기화
       newFilters = {
         ...filters,
         employee: value,
@@ -398,7 +452,6 @@ const Totaladmin = () => {
       };
       setFilters(newFilters);
 
-      // 사업 선택 드롭다운도 초기화
       const projectSelect = document.querySelector('select[name="project"]');
       if (projectSelect) {
         projectSelect.value = '';
@@ -416,6 +469,8 @@ const Totaladmin = () => {
           const projectTimeData = {};
           let totalTime = 0;
 
+          // 먼저 모든 프로젝트 목록 수집
+          const allProjects = new Set();
           filteredTasks.forEach(task => {
             const projectName = task.projectName || '미지정';
             const spentTime = parseFloat(task.spentTime) || 0;
@@ -427,30 +482,45 @@ const Totaladmin = () => {
             totalTime += spentTime;
           });
 
+          // 월별 데이터 초기화
+          const monthlyData = Array(12).fill().map(() => {
+            const monthObj = {};
+            allProjects.forEach(project => {
+              monthObj[project] = 0;
+            });
+            return monthObj;
+          });
+
+          // 데이터 집계
+          filteredTasks.forEach(task => {
+            const projectName = task.projectName || '미지정';
+            const spentTime = parseFloat(task.spentTime) || 0;
+            
+            // 프로젝트별 총 시간 집계
+            if (!projectTimeData[projectName]) {
+              projectTimeData[projectName] = 0;
+            }
+            projectTimeData[projectName] += spentTime;
+            totalTime += spentTime;
+
+            // 월별 데이터 집계
+            const month = new Date(task.date).getMonth();
+            if (month >= 0 && month < 12) {  // 유효한 월인지 확인
+              monthlyData[month][projectName] = (monthlyData[month][projectName] || 0) + spentTime;
+            }
+          });
+
           // 사업별 데이터 정렬
           const sortedProjects = Object.entries(projectTimeData)
             .sort((a, b) => b[1] - a[1])
             .filter(([_, time]) => time > 0);
-
-          // 월별 데이터 집계
-          const monthlyData = Array(12).fill(0).map(() => ({}));
-          filteredTasks.forEach(task => {
-            const month = new Date(task.date).getMonth();
-            const projectName = task.projectName || '미지정';
-            const spentTime = parseFloat(task.spentTime) || 0;
-            
-            if (!monthlyData[month][projectName]) {
-              monthlyData[month][projectName] = 0;
-            }
-            monthlyData[month][projectName] += spentTime;
-          });
 
           // 차트 데이터 업데이트
           setChartData({
             yearlyTotal: {
               series: sortedProjects.map(([_, time]) => time),
               labels: sortedProjects.map(([name, _]) => name),
-              total: totalTime
+              total: totalTime /2
             },
             monthlySeries: sortedProjects.map(([projectName, _]) => ({
               name: projectName,
@@ -458,7 +528,7 @@ const Totaladmin = () => {
             }))
           });
 
-          // 직원별 보기의 세로 스택 막대 그래프 옵션
+          // 차트 옵션 업데이트
           setMonthlyChartOptions({
             chart: {
               type: 'bar',
@@ -477,6 +547,13 @@ const Totaladmin = () => {
               categories: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
               title: {
                 text: '월별'
+              },
+              labels: {
+                show: true,
+                rotate: -45,
+                style: {
+                  fontSize: '12px'
+                }
               }
             },
             yaxis: {
@@ -574,8 +651,9 @@ const Totaladmin = () => {
         stats[task.userName].lastTaskDate = task.date;
       }
       
-      stats[task.userName].totalSpentTime += Number(task.spentTime) || 0;
-      stats[task.userName].totalRemainingTime += Number(task.remainingTime) || 0;
+      // 소요시간 계산 수정
+      stats[task.userName].totalSpentTime += Number(task.spentTime) || 0; // 소요시간
+      stats[task.userName].totalRemainingTime += Number(task.remainingTime) || 0; // 남은 시간
       
       if (Number(task.remainingTime) < 0) {
         stats[task.userName].overdueTasks += 1;
@@ -619,32 +697,29 @@ const Totaladmin = () => {
 
   // 사업별 필터링 핸들러 수정
   const handleProjectFilter = async (projectName) => {
-    // 사업 선택 시 직원 필터 초기화
     setFilters({
       ...filters,
       employee: '직원명',
       project: projectName
     });
 
-    if (!projectName || projectName === '사업명') {
-      const cachedData = localStorage.getItem(CACHE_KEY);
-      if (cachedData) {
-        const taskList = JSON.parse(cachedData);
-        updateChartData(taskList);
-      }
-      return;
-    }
-
     const cachedData = localStorage.getItem(CACHE_KEY);
     if (cachedData) {
       const taskList = JSON.parse(cachedData);
       
+      if (!projectName || projectName === '사업명') {
+        setFilteredTasks(taskList);
+        updateChartData(taskList);
+        return;
+      }
+
       // 선택된 사업의 태스크만 필터링
       const projectTasks = taskList.filter(task => task.projectName === projectName);
+      setFilteredTasks(projectTasks);  // 필터링된 태스크 저장
       
-      // 직원별 시간 집계 (도넛 차트용)
+      // 직원별 시간 집계
       const employeeTimeData = {};
-      // 카테고리별 시간 집계 (가로 막대 그래프용)
+      // 카테고리별 시간 집계
       const categoryTimeData = {};
       let totalProjectTime = 0;
 
@@ -668,24 +743,18 @@ const Totaladmin = () => {
         totalProjectTime += spentTime;
       });
 
-      // 직원별 데이터 정렬 (도넛 차트용)
-      const sortedEmployees = Object.entries(employeeTimeData)
-        .sort((a, b) => b[1] - a[1])
-        .filter(([_, time]) => time > 0);
-
-      // 카테고리별 데이터 정렬 (막대 그래프용)
+      // 카테고리별 데이터 정렬
       const sortedCategories = Object.entries(categoryTimeData)
         .sort((a, b) => b[1] - a[1])
         .filter(([_, time]) => time > 0);
 
-      // 도넛 차트 데이터 업데이트
+      // 차트 데이터 업데이트
       setChartData({
         yearlyTotal: {
-          series: sortedEmployees.map(([_, time]) => time),
-          labels: sortedEmployees.map(([name, _]) => name),
+          series: sortedCategories.map(([_, time]) => time),
+          labels: sortedCategories.map(([name, _]) => name),
           total: totalProjectTime
         },
-        // monthlySeries는 변경하지 않음 (기존 데이터 유지)
         monthlySeries: [{
           name: '업무 카테고리별 시간',
           data: sortedCategories.map(([_, time]) => time)
@@ -708,6 +777,39 @@ const Totaladmin = () => {
             distributed: true
           }
         },
+        tooltip: {
+          custom: function({ seriesIndex, dataPointIndex, w }) {
+            const category = w.globals.labels[dataPointIndex];
+            const value = w.globals.series[0][dataPointIndex];
+            
+            // 해당 카테고리의 소분류 데이터 필터링
+            const subcategoryData = projectTasks
+              .filter(task => task.categoriesName === category)
+              .reduce((acc, task) => {
+                const subcategory = task.subcategoriesName || '미분류';
+                if (!acc[subcategory]) {
+                  acc[subcategory] = 0;
+                }
+                acc[subcategory] += parseFloat(task.spentTime) || 0;
+                return acc;
+              }, {});
+
+            // 소분류 데이터를 시간 순으로 정렬
+            const sortedSubcategories = Object.entries(subcategoryData)
+              .sort(([, a], [, b]) => b - a)
+              .map(([name, time]) => `${name}: ${time.toFixed(1)}h`);
+
+            return `
+              <div class="custom-tooltip">
+                <div class="tooltip-title">${category}</div>
+                <div class="tooltip-total">총 시간: ${value.toFixed(1)}h</div>
+                <div class="tooltip-subcategories">
+                  ${sortedSubcategories.join('<br>')}
+                </div>
+              </div>
+            `;
+          }
+        },
         dataLabels: {
           enabled: true,
           formatter: function(value) {
@@ -721,7 +823,10 @@ const Totaladmin = () => {
           },
           labels: {
             formatter: function(value) {
-              return value.toFixed(1);
+              // value가 숫자인지 확인하고, 아닐 경우 기본값 0으로 처리
+              const numericValue = parseFloat(value) || 0; // 숫자가 아니면 0으로 변환
+              return numericValue.toFixed(1);
+              //return value.toFixed(1);
             }
           }
         },
@@ -733,14 +838,6 @@ const Totaladmin = () => {
         title: {
           text: `${projectName} - 업무 카테고리별 시간`,
           align: 'center'
-        },
-        tooltip: {
-          y: {
-            formatter: function(value) {
-              const percentage = ((value / totalProjectTime) * 100).toFixed(1);
-              return `${value.toFixed(1)}h (${percentage}%)`;
-            }
-          }
         },
         legend: {
           show: false
@@ -820,7 +917,7 @@ const Totaladmin = () => {
           />
         </div>
         <div className="chart-container monthly-chart">
-          <h3>2024년 월별 사업 소요시간</h3>
+          <h3>2024년 월별 소요시간</h3>
           <Chart
             options={monthlyChartOptions}
             series={chartData.monthlySeries}
@@ -829,6 +926,27 @@ const Totaladmin = () => {
           />
         </div>
       </div>
+
+      {selectedCategory && (
+        <div className="category-filter-container">
+          <div className="category-header">
+            <h3>{filters.project} - {selectedCategory}</h3>
+            <div className="subcategory-filter">
+              <select 
+                value={selectedSubcategory}
+                onChange={(e) => setSelectedSubcategory(e.target.value)}
+                className="subcategory-select"
+              >
+                {getSubcategories().map(subcategory => (
+                  <option key={subcategory} value={subcategory}>
+                    {subcategory}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+      )}
 
       <DndProvider backend={HTML5Backend}>
         <div className="totaladmin-kanban-board" onScroll={handleScroll}>
